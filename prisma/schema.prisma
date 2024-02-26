@@ -1,0 +1,159 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+// USER SETUP
+model User {
+  id                    String          @id @default(uuid())
+  email                 String          @unique
+  fullName              String?
+  userName              String          @unique
+  role                  String
+  PotentialJobsCreated  PotentialJob[]  @relation("createdBy")
+  PotentialJobsApproved purchaseOrder[] @relation("approvedBy")
+  approvedPotentialJobs purchaseOrder[] @relation("approvedTo")
+}
+
+// END USER SETUP
+
+// POTENTIAL JOB SETUP
+model PotentialJob {
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  id               Int                 @id @default(autoincrement())
+  createdBy        User                @relation("createdBy", fields: [createdById], references: [id])
+  createdById      String
+  status           String              @default("Pending")
+  approvedAt       DateTime?
+  vaultNumber      String
+  owner            String
+  city             String
+  state            String
+  vaultWidth       Decimal             @db.Decimal(10, 2)
+  vaultHeight      Decimal             @db.Decimal(10, 2)
+  vaultLength      Decimal             @db.Decimal(10, 2)
+  vaultWidthUnit   String
+  vaultHeightUnit  String
+  vaultLengthUnit  String
+  wallSqFt        Decimal             @db.Decimal(10, 2)
+  ceilingSqFt      Decimal             @db.Decimal(10, 2)
+  totalSqFt        Decimal             @db.Decimal(10, 2)
+  files            PotentialJobFiles[]
+  purchaseOrder    purchaseOrder[]
+}
+
+model PotentialJobFiles {
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  id             Int          @id @default(autoincrement())
+  PotentialJobId Int
+  PotentialJob   PotentialJob @relation(fields: [PotentialJobId], references: [id])
+  fileName       String
+  filetype       String
+  fileExt        String
+  file           Bytes        @db.VarBinary(max)
+}
+
+// END POTENTIAL JOB SETUP
+
+// PURCHASE ORDER SETUP
+model purchaseOrder {
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+  id                      Int           @id @default(autoincrement())
+  status                  String
+  approvedTo              User          @relation("approvedTo", fields: [approvedToId], references: [id], onUpdate: NoAction)
+  approvedBy              User          @relation("approvedBy", fields: [approvedByName], references: [userName], onUpdate: NoAction)
+  approvedToId            String
+  approvedByName          String
+  potentialJobId          Int
+  potentialJob            PotentialJob  @relation(fields: [potentialJobId], references: [id], onUpdate: NoAction)
+  assignedMobileFactory   MobileFactory @relation(fields: [assignedMobileFactoryId], references: [id])
+  assignedMobileFactoryId Int
+  wallSqFt                Decimal       @db.Decimal(10, 2)
+  ceilingSqFt             Decimal       @db.Decimal(10, 2)
+  totalSqFt               Decimal       @db.Decimal(10, 2)
+  price                   Decimal       @db.Decimal(10, 2)
+}
+
+// END PURCHASE ORDER SETUP
+
+// MOBILE FACTORY SETUP
+model MobileFactory {
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+  id                     Int                      @id @default(autoincrement())
+  name                   String
+  plateNumber            String
+  warehouse              Warehouse                @relation(fields: [warehouseId], references: [id])
+  warehouseId            Int
+  mobileFactoryInventory MobileFactoryInventory[]
+  purchaseOrder          purchaseOrder[]
+}
+
+model MobileFactoryInventory {
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  id                   Int                   @id @default(autoincrement())
+  mobileFactory        MobileFactory         @relation(fields: [mobileFactoryId], references: [id])
+  mobileFactoryId      Int
+  lookupInventoryItems Lookup_InventoryItems @relation(fields: [inventoryItem], references: [name])
+  inventoryItem        String
+  quantity             Int
+}
+
+// END MOBILE FACTORY SETUP
+
+// WAREHOUSE SETUP
+model Warehouse {
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  id                 Int                  @id @default(autoincrement())
+  name               String
+  address            String
+  city               String
+  state              String
+  zip                String
+  mobileFactory      MobileFactory[]
+  warehouseinventory WarehouseInventory[]
+}
+
+model WarehouseInventory {
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  id                   Int                   @id @default(autoincrement())
+  warehouse            Warehouse             @relation(fields: [warehouseId], references: [id])
+  warehouseId          Int
+  lookupInventoryItems Lookup_InventoryItems @relation(fields: [inventoryItem], references: [name])
+  inventoryItem        String
+  quantity             Int
+}
+
+// END WAREHOUSE SETUP
+
+// LOOKUP TABLES
+model Lookup_InventoryItems {
+  createdAt                        DateTime                            @default(now())
+  updatedAt                        DateTime                            @updatedAt
+  name                             String                              @unique
+  isActive                         Boolean                             @default(true)
+  mobileFactoryInventory           MobileFactoryInventory[]
+  warehouseinventory               WarehouseInventory[]
+  LookupBaseMobileFactoryInventory Lookup_BaseMobileFactoryInventory[]
+}
+
+model Lookup_BaseMobileFactoryInventory {
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  id                   Int                   @id @default(autoincrement())
+  lookupInventoryItems Lookup_InventoryItems @relation(fields: [inventoryItem], references: [name])
+  inventoryItem        String
+  quantity             Int
+}
+
+// END LOOKUP TABLES
