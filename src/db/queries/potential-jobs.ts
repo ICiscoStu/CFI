@@ -1,5 +1,5 @@
 'use server';
-import type { PotentialJob, MobileFactoryInventory } from "@prisma/client";
+import type { PotentialJob } from "@prisma/client";
 import { db } from "@/db";
 import { notFound } from 'next/navigation';
 import { currentUser } from '@clerk/nextjs';
@@ -21,6 +21,7 @@ export async function getPotentialJob(id: number): Promise<IPotentialJob | null>
         include: {
             createdBy: {
                 select: {
+                    id: true,
                     fullName: true,
                     userName: true
                 }
@@ -109,6 +110,23 @@ export async function getPotentialJobsByUser(): Promise<IPotentialJob[]> {
     return formattedJobs;
 }
 
+export async function getPotentialJobsCountByUser(): Promise<number> {
+    const user = await currentUser();
+
+    if (!user) {
+        throw new Error('User not found');
+    }
+
+    const jobsCount = await db.potentialJob.count({
+        where: {
+            createdById: user.id,
+            status: 'Pending'
+        },
+    });
+    return jobsCount;
+
+}
+
 export async function getMobileFactories(): Promise<IMobileFactory[]> {
     const mobileFactories = await db.mobileFactory.findMany({
         select: {
@@ -120,13 +138,4 @@ export async function getMobileFactories(): Promise<IMobileFactory[]> {
     });
 
     return mobileFactories;
-}
-
-export async function getMobileFactoryInventory(id: number): Promise<MobileFactoryInventory[]> {
-    const mobileFactoryInventory = await db.mobileFactoryInventory.findMany({
-        where: {
-            mobileFactoryId: id
-        }
-    });
-    return mobileFactoryInventory;
 }

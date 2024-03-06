@@ -46,7 +46,7 @@ const Home = () => {
           </Grid>
           <Grid xs={6}>
             <Item>
-              <Button variant="contained" color="primary" href="/potential-jobs/list" fullWidth>
+              <Button variant="contained" color="primary" href="/active-jobs/list" fullWidth>
                 <Grid container direction="column" alignItems="center" spacing={1}>
                   <Grid>
                     <IconSearch className="h-28 w-28 py-2" />

@@ -34,46 +34,25 @@ async function main() {
 
     const looup_inventoryItems = await prisma.lookup_InventoryItems.createMany({
         data: [
-            { name: "Wall Base A" },
-            { name: "Ceiling Base A" },
-            { name: "Top Coat" },
-            { name: "Wall Base B" },
-            { name: "Ceiling Base B" },
-            { name: "Crack Fill" },
-            { name: "Packs of Glass" },
-            { name: "Green tips" },
-            { name: "Boxes of Gloves S" },
-            { name: "Boxes of Gloves M" },
-            { name: "Boxes of Gloves L" },
-            { name: "Tyvek Suit S" },
-            { name: "Tyvek Suit M" },
-            { name: "Tyvek Suit L" },
-            { name: "Tyvek Suit XL" },
-            { name: "Boxes of Plungers" }
+            { name: "Wall Base A", isActive: true, order: 0},
+            { name: "Ceiling Base A", isActive: true, order: 0},
+            { name: "Top Coat", isActive: true, order: 0 },
+            { name: "Wall Base B", isActive: true, order: 0 },
+            { name: "Ceiling Base B", isActive: true, order: 0 },
+            { name: "Crack Fill", isActive: true, order: 0 },
+            { name: "Packs of Glass", isActive: true, order: 0 },
+            { name: "Green tips", isActive: true, order: 1 },
+            { name: "Boxes of Gloves S", isActive: true, order: 1 },
+            { name: "Boxes of Gloves M", isActive: true, order: 1 },
+            { name: "Boxes of Gloves L", isActive: true, order: 1},
+            { name: "Tyvek Suit S", isActive: true, order: 1 },
+            { name: "Tyvek Suit M", isActive: true, order: 1 },
+            { name: "Tyvek Suit L", isActive: true, order: 1 },
+            { name: "Tyvek Suit XL", isActive: true, order: 1},
+            { name: "Boxes of Plungers", isActive: true, order: 1}
         ]
     });
-
-    const Lookup_BaseMobileFactoryInventory = await prisma.lookup_BaseMobileFactoryInventory.createMany({
-        data: [
-            { inventoryItem: "Wall Base A", quantity: 100 },
-            { inventoryItem: "Ceiling Base A", quantity: 100 },
-            { inventoryItem: "Top Coat", quantity: 100 },
-            { inventoryItem: "Wall Base B", quantity: 100 },
-            { inventoryItem: "Ceiling Base B", quantity: 100 },
-            { inventoryItem: "Crack Fill", quantity: 100 },
-            { inventoryItem: "Packs of Glass", quantity: 100 },
-            { inventoryItem: "Green tips", quantity: 100 },
-            { inventoryItem: "Boxes of Gloves S", quantity: 100 },
-            { inventoryItem: "Boxes of Gloves M", quantity: 100 },
-            { inventoryItem: "Boxes of Gloves L", quantity: 100 },
-            { inventoryItem: "Tyvek Suit S", quantity: 100 },
-            { inventoryItem: "Tyvek Suit M", quantity: 100 },
-            { inventoryItem: "Tyvek Suit L", quantity: 100 },
-            { inventoryItem: "Tyvek Suit XL", quantity: 100 },
-            { inventoryItem: "Boxes of Plungers", quantity: 100 },
-        ]
-    });
-    console.log({ looup_inventoryItems, Lookup_BaseMobileFactoryInventory });
+    console.log({ looup_inventoryItems });
 
     const warehouse = await prisma.warehouse.createMany({
         data: [
@@ -131,44 +110,7 @@ async function main() {
         ]
     });
 
-    const mobile_factory_inventory = await prisma.mobileFactoryInventory.createMany({
-        data: [
-            { mobileFactoryId: 1, inventoryItem: "Wall Base A", quantity: 20 },
-            { mobileFactoryId: 1, inventoryItem: "Ceiling Base A", quantity: 22 },
-            { mobileFactoryId: 1, inventoryItem: "Top Coat", quantity: 12 },
-            { mobileFactoryId: 1, inventoryItem: "Wall Base B", quantity: 3 },
-            { mobileFactoryId: 1, inventoryItem: "Ceiling Base B", quantity: 30 },
-            { mobileFactoryId: 1, inventoryItem: "Crack Fill", quantity: 12 },
-            { mobileFactoryId: 1, inventoryItem: "Packs of Glass", quantity: 4 },
-            { mobileFactoryId: 1, inventoryItem: "Green tips", quantity: 7 },
-            { mobileFactoryId: 1, inventoryItem: "Boxes of Gloves S", quantity: 19 },
-            { mobileFactoryId: 1, inventoryItem: "Boxes of Gloves M", quantity: 10 },
-            { mobileFactoryId: 1, inventoryItem: "Boxes of Gloves L", quantity: 12 },
-            { mobileFactoryId: 1, inventoryItem: "Tyvek Suit S", quantity: 12 },
-            { mobileFactoryId: 1, inventoryItem: "Tyvek Suit M", quantity: 20 },
-            { mobileFactoryId: 1, inventoryItem: "Tyvek Suit L", quantity: 24 },
-            { mobileFactoryId: 1, inventoryItem: "Tyvek Suit XL", quantity: 32 },
-            { mobileFactoryId: 1, inventoryItem: "Boxes of Plungers", quantity: 12 },
-            { mobileFactoryId: 2, inventoryItem: "Wall Base A", quantity: 10 },
-            { mobileFactoryId: 2, inventoryItem: "Ceiling Base A", quantity: 11 },
-            { mobileFactoryId: 2, inventoryItem: "Top Coat", quantity: 9 },
-            { mobileFactoryId: 2, inventoryItem: "Wall Base B", quantity: 3 },
-            { mobileFactoryId: 2, inventoryItem: "Ceiling Base B", quantity: 0 },
-            { mobileFactoryId: 2, inventoryItem: "Crack Fill", quantity: 5 },
-            { mobileFactoryId: 2, inventoryItem: "Packs of Glass", quantity: 20 },
-            { mobileFactoryId: 2, inventoryItem: "Green tips", quantity: 1 },
-            { mobileFactoryId: 2, inventoryItem: "Boxes of Gloves S", quantity: 14 },
-            { mobileFactoryId: 2, inventoryItem: "Boxes of Gloves M", quantity: 14 },
-            { mobileFactoryId: 2, inventoryItem: "Boxes of Gloves L", quantity: 17 },
-            { mobileFactoryId: 2, inventoryItem: "Tyvek Suit S", quantity: 1 },
-            { mobileFactoryId: 2, inventoryItem: "Tyvek Suit M", quantity: 1 },
-            { mobileFactoryId: 2, inventoryItem: "Tyvek Suit L", quantity: 3 },
-            { mobileFactoryId: 2, inventoryItem: "Tyvek Suit XL", quantity: 1 },
-            { mobileFactoryId: 2, inventoryItem: "Boxes of Plungers", quantity: 10 }
-        ]
-    });
-
-    console.log({ mobile_factory, mobile_factory_inventory });
+    console.log({ mobile_factory });
 };
 
 main()

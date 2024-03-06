@@ -32,6 +32,9 @@ interface confirmData {
     vaultWidth: string,
     vaultLength: string,
     vaultHeight: string,
+    widthUnit: string,
+    lengthUnit: string,
+    heightUnit: string,
     wallSqFt: string,
     ceilingSqFt: string,
     totalSqFt: string,
@@ -55,7 +58,7 @@ export default function PotentialJobCreateForm({ formAction }: PostFormProps) {
     const [owner, setOwner] = useState<string>('');
     const [files, setFiles] = useState<File[]>([]);
     const [widthUnit, setWidthUnit] = useState<string>('ft');
-    const [lenghtUnit, setLenghtUnit] = useState<string>('ft');
+    const [lengthUnit, setLengthUnit] = useState<string>('ft');
     const [heightUnit, setHeightUnit] = useState<string>('ft');
 
     const [confirmData, setConfirmData] = useState<confirmData>({
@@ -66,6 +69,9 @@ export default function PotentialJobCreateForm({ formAction }: PostFormProps) {
         vaultWidth: '',
         vaultLength: '',
         vaultHeight: '',
+        widthUnit: '',
+        lengthUnit: '',
+        heightUnit: '',
         wallSqFt: '',
         ceilingSqFt: '',
         totalSqFt: '',
@@ -88,12 +94,20 @@ export default function PotentialJobCreateForm({ formAction }: PostFormProps) {
         formData.append('vaultWidth', vaultWidth);
         formData.append('vaultLength', vaultLength);
         formData.append('vaultHeight', vaultHeight);
+        formData.append('widthUnit', widthUnit);
+        formData.append('lengthUnit', lengthUnit);
+        formData.append('heightUnit', heightUnit);
         files.forEach(file => {
             formData.append('files', file);
         });
+
+        const [wallArea, ceilingArea, totalArea] = handleCalculateSqFt(vaultWidth, widthUnit, vaultLength, lengthUnit, vaultHeight, heightUnit);
+
+        formData.append('wallSqFt', wallArea.toFixed(2));
+        formData.append('ceilingSqFt', ceilingArea.toFixed(2));
+        formData.append('totalSqFt', totalArea.toFixed(2));
+
         setPotentialJobFormData(formData);
-        
-        const [wallArea, ceilingArea, totalArea] = handleCalculateSqFt(vaultWidth, widthUnit, vaultLength, lenghtUnit, vaultHeight, heightUnit);
 
         setConfirmData({
             vaultNumber: vaultNumber,
@@ -103,6 +117,9 @@ export default function PotentialJobCreateForm({ formAction }: PostFormProps) {
             vaultWidth: vaultWidth,
             vaultLength: vaultLength,
             vaultHeight: vaultHeight,
+            widthUnit: widthUnit,
+            lengthUnit: lengthUnit,
+            heightUnit: heightUnit,
             wallSqFt: wallArea.toFixed(2),
             ceilingSqFt: ceilingArea.toFixed(2),
             totalSqFt: totalArea.toFixed(2),
@@ -234,8 +251,8 @@ export default function PotentialJobCreateForm({ formAction }: PostFormProps) {
                                         select
                                         fullWidth
                                         name="lenghtUnit"
-                                        value={lenghtUnit}
-                                        onChange={(e) => setLenghtUnit(e.target.value)}
+                                        value={lengthUnit}
+                                        onChange={(e) => setLengthUnit(e.target.value)}
                                         InputProps={{
                                             sx: {
                                                 borderTopLeftRadius: '0px',

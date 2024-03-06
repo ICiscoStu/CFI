@@ -18,6 +18,12 @@ const PotentialJobInputSchema = z.object({
     vaultWidth: z.number(),
     vaultLength: z.number(),
     vaultHeight: z.number(),
+    widthUnit: z.string(),
+    lengthUnit: z.string(),
+    heightUnit: z.string(),
+    wallSqFt: z.number(),
+    ceilingSqFt: z.number(),
+    totalSqFt: z.number(),
 });
 
 interface PotentialJobState {
@@ -29,6 +35,12 @@ interface PotentialJobState {
         vaultWidth?: string[],
         vaultLength?: string[],
         vaultHeight?: string[],
+        widthUnit?: string[],
+        lengthUnit?: string[],
+        heightUnit?: string[],
+        wallSqFt?: string[],
+        ceilingSqFt?: string[],
+        totalSqFt?: string[],
         _form?: string[],
     }
 }
@@ -46,6 +58,12 @@ export async function createPotentialJob(
         vaultWidth: Number(formData.get('vaultWidth')),
         vaultLength: Number(formData.get('vaultLength')),
         vaultHeight: Number(formData.get('vaultHeight')),
+        widthUnit: formData.get('widthUnit'),
+        lengthUnit: formData.get('lengthUnit'),
+        heightUnit: formData.get('heightUnit'),
+        wallSqFt: Number(formData.get('wallSqFt')),
+        ceilingSqFt: Number(formData.get('ceilingSqFt')),
+        totalSqFt: Number(formData.get('totalSqFt')),
     });
 
     if (!result.success) {
@@ -75,12 +93,12 @@ export async function createPotentialJob(
                     vaultWidth: result.data.vaultWidth,
                     vaultLength: result.data.vaultLength,
                     vaultHeight: result.data.vaultHeight,
-                    vaultWidthUnit: 'unit', // Replace 'unit' with the actual value for vaultHeightUnit
-                    vaultHeightUnit: 'unit',
-                    vaultLengthUnit: 'unit', // Replace 'unit' with the actual value for vaultLengthUnit
-                    wallSqFt: 0, // Replace 0 with the actual value for wallSqFt
-                    ceilingSqFt: 0, // Replace 0 with the actual value for ceilingSqFt
-                    totalSqFt: 0, // Replace 0 with the actual value for totalSqFt
+                    vaultWidthUnit: result.data.widthUnit, 
+                    vaultHeightUnit: result.data.heightUnit, 
+                    vaultLengthUnit: result.data.lengthUnit , 
+                    wallSqFt: result.data.wallSqFt,
+                    ceilingSqFt: result.data.ceilingSqFt,
+                    totalSqFt: result.data.totalSqFt,
                 }
             });
         } else {
@@ -105,5 +123,5 @@ export async function createPotentialJob(
     } 
     
     await revalidatePath('/potential-jobs/create');
-    redirect('/potential-jobs/list');
+    redirect('/active-jobs/list');
 }

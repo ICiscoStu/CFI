@@ -40,7 +40,7 @@ model PotentialJob {
   vaultWidthUnit   String
   vaultHeightUnit  String
   vaultLengthUnit  String
-  wallSqFt        Decimal             @db.Decimal(10, 2)
+  wallSqFt         Decimal             @db.Decimal(10, 2)
   ceilingSqFt      Decimal             @db.Decimal(10, 2)
   totalSqFt        Decimal             @db.Decimal(10, 2)
   files            PotentialJobFiles[]
@@ -79,8 +79,34 @@ model purchaseOrder {
   ceilingSqFt             Decimal       @db.Decimal(10, 2)
   totalSqFt               Decimal       @db.Decimal(10, 2)
   price                   Decimal       @db.Decimal(10, 2)
+  purchaseOrderDetails    PurchaseOrderDetails?
 }
 
+model PurchaseOrderDetails {
+  createdAt                        DateTime      @default(now())
+  updatedAt                        DateTime      @updatedAt
+  id                               Int           @id @default(autoincrement())
+  purchaseOrder                    purchaseOrder @relation(fields: [purchaseOrderId], references: [id], onUpdate: NoAction)
+  purchaseOrderId                  Int @unique
+  mobileFactory                    MobileFactory         @relation(fields: [mobileFactoryId], references: [id])
+  mobileFactoryId                  Int
+  signedOffBy                      String
+  signedOffDate                    DateTime
+  inventoryCreatorUserId           String
+  PurchaseOrderInventory           PurchaseOrderInventory[]
+}
+
+model PurchaseOrderInventory {
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  id                   Int                   @id @default(autoincrement())
+  purchaseOrderDetails PurchaseOrderDetails @relation(fields: [purchaseOrderDetailsId], references: [id])
+  purchaseOrderDetailsId Int
+  lookupInventoryItems Lookup_InventoryItems @relation(fields: [inventoryItem], references: [name])
+  inventoryItem        String
+  quantity             Int
+  notes                String?
+}
 // END PURCHASE ORDER SETUP
 
 // MOBILE FACTORY SETUP
@@ -92,19 +118,8 @@ model MobileFactory {
   plateNumber            String
   warehouse              Warehouse                @relation(fields: [warehouseId], references: [id])
   warehouseId            Int
-  mobileFactoryInventory MobileFactoryInventory[]
   purchaseOrder          purchaseOrder[]
-}
-
-model MobileFactoryInventory {
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  id                   Int                   @id @default(autoincrement())
-  mobileFactory        MobileFactory         @relation(fields: [mobileFactoryId], references: [id])
-  mobileFactoryId      Int
-  lookupInventoryItems Lookup_InventoryItems @relation(fields: [inventoryItem], references: [name])
-  inventoryItem        String
-  quantity             Int
+  purchaseOrderDetails   PurchaseOrderDetails[]
 }
 
 // END MOBILE FACTORY SETUP
@@ -141,19 +156,11 @@ model Lookup_InventoryItems {
   createdAt                        DateTime                            @default(now())
   updatedAt                        DateTime                            @updatedAt
   name                             String                              @unique
+  index                            Int                                 @default(autoincrement())
   isActive                         Boolean                             @default(true)
-  mobileFactoryInventory           MobileFactoryInventory[]
+  order                            Int                                 @default(0)
   warehouseinventory               WarehouseInventory[]
-  LookupBaseMobileFactoryInventory Lookup_BaseMobileFactoryInventory[]
-}
-
-model Lookup_BaseMobileFactoryInventory {
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  id                   Int                   @id @default(autoincrement())
-  lookupInventoryItems Lookup_InventoryItems @relation(fields: [inventoryItem], references: [name])
-  inventoryItem        String
-  quantity             Int
+  PurchaseOrderInventory           PurchaseOrderInventory[]
 }
 
 // END LOOKUP TABLES

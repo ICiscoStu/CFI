@@ -2,36 +2,44 @@
 import { useEffect, useState } from 'react';
 import { Divider, Grid, Typography, Link, Button, Box, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
-import { getMobileFactories, getPotentialJob, getMobileFactoryInventory } from '@/db/queries/potential-jobs';
+import { getMobileFactories, getPotentialJob } from '@/db/queries/potential-jobs';
 import { createPurchaseOrder } from '@/actions/active-jobs';
+import LoadingButton from '@mui/lab/LoadingButton';
 
+interface PotentialJob {
+    vaultNumber: string;
+    city: string;
+    owner: string;
+    state: string;
+    vaultHeight: number;
+    vaultWidth: number;
+    vaultLength: number;
+    vaultHeightUnit: string;
+    vaultWidthUnit: string;
+    vaultLengthUnit: string;
+    wallSqFt: number;
+    ceilingSqFt: number;
+    totalSqFt: number;
+    createdBy: {
+        id: string;
+        fullName: string;
+        userName: string;
+    }
+}
 export default function PotentialJobDetails({ params }: { params: { id: string } }) {
 
     const id = Number(params.id);
-    const [data, setData] = useState({
-        vaultNumber: '',
-        city: '',
-        owner: '',
-        state: '',
-        vaultHeight: '',
-        vaultWidth: '',
-        vaultLength: '',
-        wallSqFt: '',
-        ceilingSqFt: '',
-        totalSqFt: '',
-        createdBy: {
-            fullName: '',
-            userName: ''
-        }
-    });
-    const [selectedMobileFactory, setSelectedMobileFactory] = useState<number>();
+    const [potentialJob, setPotentialJob] = useState<PotentialJob>();
+    const [selectedMobileFactory, setSelectedMobileFactory] = useState<number>(0);
     const [mobileFactories, setMobileFactories] = useState<IMobileFactory[]>([]);
     const [mobileFactoryInventory, setMobileFactoryInventory] = useState<any>([]);
-    const [dataLoaded, setDataLoaded] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         getPotentialJob(id).then((data: any) => {
-            setData(data);
+            setPotentialJob(data);
+            setLoading(false);
         });
 
         getMobileFactories().then((data: IMobileFactory[]) => {
@@ -40,23 +48,25 @@ export default function PotentialJobDetails({ params }: { params: { id: string }
 
     }, []);
 
-    useEffect(() => {
-        if (selectedMobileFactory && selectedMobileFactory != 0) {
-            getMobileFactoryInventory(selectedMobileFactory).then((data: any) => {
-                setMobileFactoryInventory(data);
-                setDataLoaded(true);
-            });
-        } else {
-            setMobileFactoryInventory([]);
-            setDataLoaded(false);
-        }
-    }, [selectedMobileFactory]);
-
     const handleChange = (event: SelectChangeEvent) => {
         setSelectedMobileFactory(parseInt(event.target.value));
     }
 
     const handleApprove = (e: any) => {
+        setSubmitting(true);
+        if (potentialJob) {
+            createPurchaseOrder(
+                potentialJob.createdBy.id,
+                selectedMobileFactory,
+                id,
+                potentialJob.wallSqFt,
+                potentialJob.ceilingSqFt,
+                potentialJob.totalSqFt
+            ).then((data: any) => {
+                setSubmitting(false);
+                console.log(data);
+            });
+        }
     }
 
     return (
@@ -75,119 +85,102 @@ export default function PotentialJobDetails({ params }: { params: { id: string }
             </Grid>
             <Divider sx={{ my: 2 }} />
             <Box sx={{ height: '530px', overflow: 'hidden', overflowY: 'scroll' }}>
-                <Grid container spacing={1} >
-                    <Grid item xs={4}>
-                        <Typography variant="h6" textAlign={"left"}>Submitter: </Typography>
-                    </Grid>
-                    <Grid item xs={8}>
-                        <Typography variant="body1">{data.createdBy.fullName} ({data.createdBy.userName})</Typography>
-                    </Grid>
-                    <Grid item xs={4}>
-                        <Typography variant="h6" textAlign={"left"}>Vault Number: </Typography>
-                    </Grid>
-                    <Grid item xs={8}>
-                        <Typography variant="body1">{data.vaultNumber}</Typography>
-                    </Grid>
-                    <Grid item xs={4}>
-                        <Typography variant="h6" textAlign={"left"}>Owner: </Typography>
-                    </Grid>
-                    <Grid item xs={8}>
-                        <Typography variant="body1">{data.owner}</Typography>
-                    </Grid>
-                    <Grid item xs={4}>
-                        <Typography variant="h6" textAlign={"left"}>Location: </Typography>
-                    </Grid>
-                    <Grid item xs={4}>
-                        <Typography variant="body1">City: {data.city}</Typography>
-                    </Grid>
-                    <Grid item xs={4}>
-                        <Typography variant="body1">State: {data.state}</Typography>
-                    </Grid>
-                </Grid>
-                <Divider sx={{
-                    m: 2
-                }} />
-                <Grid container spacing={1}>
-                    <Grid item xs={12}>
-                        <Typography variant="h6" textAlign={"left"}>Vault Dimensions:</Typography>
-                    </Grid>
-                    <Grid item xs={4}>
-                        <Typography variant="body1">Vault Height: {data.vaultHeight}</Typography>
-                    </Grid>
-                    <Grid item xs={4}>
-                        <Typography variant="body1">Vault Width: {data.vaultWidth}</Typography>
-                    </Grid>
-                    <Grid item xs={4}>
-                        <Typography variant="body1">Vault Length: {data.vaultLength}</Typography>
-                    </Grid>
-                    <Grid item xs={4}>
-                        <Typography variant="body1">Wall Sq Footage</Typography>
-                    </Grid>
-                    <Grid item xs={4}>
-                        <Typography variant="body1">Ceiling Sq Footage</Typography>
-                    </Grid>
-                    <Grid item xs={4}>
-                        <Typography variant="body1">Total Sq Footage</Typography>
-                    </Grid>
-                    <Grid item xs={4}>
-                        <Typography variant="body1">{data.wallSqFt}</Typography>
-                    </Grid>
-                    <Grid item xs={4}>
-                        <Typography variant="body1">{data.ceilingSqFt}</Typography>
-                    </Grid>
-                    <Grid item xs={4}>
-                        <Typography variant="body1">{data.totalSqFt}</Typography>
-                    </Grid>
-                </Grid >
-                <Divider sx={{
-                    m: 2
-                }} />
-                <Grid item xs={12}>
-                    <Typography variant="h6" textAlign={"left"}>Approval Information:</Typography>
-                </Grid>
-                <Box sx={{ py: 1 }}>
-                    {mobileFactories && (
-                        <>
-                            <FormControl fullWidth>
-                                <InputLabel id="mobile-factory-select-label">Mobile Factory</InputLabel>
-                                <Select
-                                    labelId="mobile-factory-select-label"
-                                    id="mobile-factory-select"
-                                    value={selectedMobileFactory?.toString() || ''}
-                                    label="Mobile Factory"
-                                    onChange={handleChange}
-                                    fullWidth
-                                >
-                                    <MenuItem value={0}>
-                                        <em>None</em>
-                                    </MenuItem>
-                                    {mobileFactories.map((item: any) => (
-                                        <MenuItem key={item.id} value={item.id}>
-                                            {item.name} | {item.plateNumber}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                            {mobileFactoryInventory && dataLoaded && (
+                {loading && (
+                    <>
+                        Loading...
+                    </>
+                )}
+                {!loading && (
+                    <>
+                        <Grid container spacing={1} >
+                            <Grid item xs={4}>
+                                <Typography variant="h6" textAlign={"left"}>Submitter: </Typography>
+                            </Grid>
+                            <Grid item xs={8}>
+                                <Typography variant="body1">{potentialJob!.createdBy.fullName} ({potentialJob!.createdBy.userName})</Typography>
+                            </Grid>
+                            <Grid item xs={4}>
+                                <Typography variant="h6" textAlign={"left"}>Vault Number: </Typography>
+                            </Grid>
+                            <Grid item xs={8}>
+                                <Typography variant="body1">{potentialJob!.vaultNumber}</Typography>
+                            </Grid>
+                            <Grid item xs={4}>
+                                <Typography variant="h6" textAlign={"left"}>Owner: </Typography>
+                            </Grid>
+                            <Grid item xs={8}>
+                                <Typography variant="body1">{potentialJob!.owner}</Typography>
+                            </Grid>
+                            <Grid item xs={4}>
+                                <Typography variant="h6" textAlign={"left"}>Location: </Typography>
+                            </Grid>
+                            <Grid item xs={4}>
+                                <Typography variant="body1">City: {potentialJob!.city}</Typography>
+                            </Grid>
+                            <Grid item xs={4}>
+                                <Typography variant="body1">State: {potentialJob!.state}</Typography>
+                            </Grid>
+                        </Grid>
+                        <Divider sx={{
+                            m: 2
+                        }} />
+                        <Grid container spacing={1}>
+                            <Grid item xs={12}>
+                                <Typography variant="h6" textAlign={"left"}>Vault Dimensions:</Typography>
+                            </Grid>
+                            <Grid item xs={4}>
+                                <Typography variant="body1">Vault Width: {potentialJob!.vaultWidth} {potentialJob!.vaultWidthUnit}</Typography>
+                            </Grid>
+                            <Grid item xs={4}>
+                                <Typography variant="body1">Vault Length: {potentialJob!.vaultLength} {potentialJob!.vaultLengthUnit}</Typography>
+                            </Grid>
+                            <Grid item xs={4}>
+                                <Typography variant="body1">Vault Height: {potentialJob!.vaultHeight} {potentialJob!.vaultHeightUnit} </Typography>
+                            </Grid>
+                            <Grid item xs={4}>
+                                <Typography variant="body1">Wall SqFt: {potentialJob!.wallSqFt} SqFt</Typography>
+                            </Grid>
+                            <Grid item xs={4}>
+                                <Typography variant="body1">Ceiling SqFt: {potentialJob!.ceilingSqFt} SqFt</Typography>
+                            </Grid>
+                            <Grid item xs={4}>
+                                <Typography variant="body1">Total SqFt: {potentialJob!.totalSqFt} SqFt</Typography>
+                            </Grid>
+                        </Grid >
+                        <Divider sx={{
+                            m: 2
+                        }} />
+                        <Grid item xs={12}>
+                            <Typography variant="h6" textAlign={"left"}>Approval Information:</Typography>
+                        </Grid>
+                        <Box sx={{ py: 1 }}>
+                            {mobileFactories && (
                                 <>
-                                    <Grid item xs={12}>
-                                        <Typography variant="h6">Mobile Factory Current Inventory:</Typography>
-                                    </Grid>
-                                    {mobileFactoryInventory.map((item: any) => (
-                                        <Grid container key={item.id} spacing={1}>
-                                            <Grid item xs={6}>
-                                                <Typography variant="body1">{item.inventoryItem}: </Typography>
-                                            </Grid>
-                                            <Grid item xs={6}>
-                                                <Typography variant="body1">{item.quantity}</Typography>
-                                            </Grid>
-                                        </Grid>
-                                    ))}
+                                    <FormControl fullWidth>
+                                        <InputLabel id="mobile-factory-select-label">Mobile Factory</InputLabel>
+                                        <Select
+                                            labelId="mobile-factory-select-label"
+                                            id="mobile-factory-select"
+                                            value={selectedMobileFactory?.toString() || ''}
+                                            label="Mobile Factory"
+                                            onChange={handleChange}
+                                            fullWidth
+                                        >
+                                            <MenuItem value={0}>
+                                                <em>None</em>
+                                            </MenuItem>
+                                            {mobileFactories.map((item: any) => (
+                                                <MenuItem key={item.id} value={item.id}>
+                                                    {item.name} | {item.plateNumber}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
                                 </>
                             )}
-                        </>
-                    )}
-                </Box>
+                        </Box>
+                    </>
+                )}
             </Box>
             <Divider sx={{
                 m: 2
@@ -200,9 +193,16 @@ export default function PotentialJobDetails({ params }: { params: { id: string }
                         </Button>
                     </Grid>
                     <Grid item xs={4}>
-                        <Button variant="contained" color="primary" fullWidth disabled={!selectedMobileFactory} onClick={handleApprove}>
-                            Approve Job
-                        </Button>
+                        <LoadingButton
+                            size="large"
+                            onClick={handleApprove}
+                            loading={submitting}
+                            loadingIndicator="Submitting..."
+                            variant="contained"
+                            disabled={!selectedMobileFactory || selectedMobileFactory === 0}
+                        >
+                            <span>Approve Job</span>
+                        </LoadingButton>
                     </Grid>
                 </Grid>
             </Grid>
