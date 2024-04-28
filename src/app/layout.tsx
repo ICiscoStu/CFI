@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "CFI | Inventory Management",
-  description: "Composites for infrastrucvture inventory management system",
+  description: "Composites for infrastructure inventory management system",
 };
 
 export default function RootLayout({
@@ -27,7 +27,7 @@ export default function RootLayout({
           }}
         >
           <ThemeProvider theme={theme}>
-            <body className={inter.className}>{children}</body>
+              <body className={inter.className}>{children}</body>
           </ThemeProvider>
         </AppRouterCacheProvider>
       </html>

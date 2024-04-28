@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Divider, Grid, Typography, Link, List, ListItem, ListItemText, Box, TextField } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
-import { getActiveJobDetail, getBaseInventoryItems, getExtraInventoryItems } from '@/db/queries/active-jobs';
+import { getActiveJobDetail, getBaseInventoryItems, getExtraInventoryItems } from '@/db/queries/active-jobs-old';
 import ConfirmationDialog from '@/components/layout/active-jobs/add-inventory-items-dialog';
 import {createPurchaseOrderInventoryCount } from '@/actions/active-jobs';
 

@@ -9,6 +9,7 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { Typography, Grid, Divider } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
+import moment from 'moment';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     '& .MuiDialogContent-root': {
@@ -28,12 +29,16 @@ interface ConfirmDialogProps {
         vaultNumber: string,
         city: string,
         state: string,
-        vaultHeight: string,
-        vaultWidth: string,
-        vaultLength: string,
+        vaultHeightFt: string,
+        vaultWidthFt: string,
+        vaultLengthFt: string,
+        vaultHeightIn: string,
+        vaultWidthIn: string,
+        vaultLengthIn: string,
         wallSqFt: string,
         ceilingSqFt: string,
         totalSqFt: string,
+        possibleStartDate: moment.Moment | null,
     },
 }
 
@@ -73,6 +78,9 @@ export default function ConfirmationModal({ open, handleClose, handleConfirm, lo
                             p: 6,
                         }}>
                             <Grid item xs={12}>
+                                <Typography variant="h6" textAlign={"center"}>Possible Start Date: {moment(data.possibleStartDate).format('MM/DD/YYYY') }</Typography>
+                            </Grid>
+                            <Grid item xs={12}>
                                 <Typography variant="h6" textAlign={"center"}>Vault Information:</Typography>
                             </Grid>
                             <Grid item xs={6}>
@@ -97,19 +105,19 @@ export default function ConfirmationModal({ open, handleClose, handleConfirm, lo
                                 <Typography variant="body1" textAlign={"right"}>Vault Height:</Typography>
                             </Grid>
                             <Grid item xs={6}>
-                                <Typography variant="body1">{data.vaultHeight}</Typography>
+                                <Typography variant="body1">{data.vaultHeightFt}Ft {data.vaultHeightIn}In</Typography>
                             </Grid>
                             <Grid item xs={6}>
                                 <Typography variant="body1" textAlign={"right"}>Vault Width:</Typography>
                             </Grid>
                             <Grid item xs={6}>
-                                <Typography variant="body1">{data.vaultWidth}</Typography>
+                                <Typography variant="body1">{data.vaultWidthFt}Ft {data.vaultWidthIn}In</Typography>
                             </Grid>
                             <Grid item xs={6}>
                                 <Typography variant="body1" textAlign={"right"}>Vault Length:</Typography>
                             </Grid>
                             <Grid item xs={6}>
-                                <Typography variant="body1">{data.vaultLength}</Typography>
+                                <Typography variant="body1">{data.vaultLengthFt}Ft {data.vaultLengthIn}In</Typography>
                             </Grid>
                             <Divider sx={{
                                 m: 2

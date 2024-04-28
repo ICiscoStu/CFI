@@ -1,7 +1,6 @@
 'use server';
 
 import { db } from '@/db';
-import type { purchaseOrder } from '@prisma/client';
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
@@ -10,97 +9,153 @@ import { redirect } from 'next/navigation';
 import { currentUser } from "@clerk/nextjs";
 
 
-export async function createPurchaseOrder(
-    approvedToId: any,
-    assignedMobileFactoryId: number,
-    potentialJobId: number,
-    wallSqFt: number,
-    ceilingSqFt: number,
-    totalSqFt: number,
-): Promise<string> {
+export async function ActivateJob(
+    approvedJobId: number,
+    mobileFactoryId: string,
+    assignedToId: string,
+    possibleStartDate: string,
+) {
     const user = await currentUser();
-
-    if (!user) {
-        throw new Error('User not found');
-    }
-    
     try {
-        const dbUser = await db.user.findUnique({
-            where: {
-                id: user.id
-            },
-            select: {
-                userName: true,
-            }
-        });
-    
-        const purchaseOrder = db.purchaseOrder.create({
-            data: {
-                status: 'Active',
-                approvedToId,
-                assignedMobileFactoryId,
-                potentialJobId,
-                approvedByName: dbUser!.userName,
-                wallSqFt,
-                ceilingSqFt,
-                totalSqFt,
-                price: 0, //TODO: Pending Calculation
-            }
-        }).then(async (purchaseOrder) => {
-            const potentialJob = await db.potentialJob.update({
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        const role: string = user!.publicMetadata.role as string;
+        const contractorId: string = user!.privateMetadata.contractorId as string;
+
+        if (contractorId && role === 'contractor_administrator' || role === 'contractor_office') {
+
+            const approvedJob = await db.approvedJobs.findUnique({
                 where: {
-                    id: potentialJobId
-                },
-                data: {
-                    status: 'Approved'
+                    id: approvedJobId
                 }
             });
-        });
-    
-        
-    } catch (error : unknown) {
-        if (error instanceof Error) {
-            console.log(error);
-            return 'An error occurred while creating the work order.';
-        } else {
-            return  'Something went wrong'
-        }
-        
+
+            const activeJob = await db.activeJobs.create({
+                data: {
+                    assignedToId: assignedToId,
+                    contractorId: approvedJob!.contractorId,
+                    jobDetailsId: approvedJob!.jobDetailsId,
+                    mobileFactoryId: mobileFactoryId
+                }
+            });
+
+            if (possibleStartDate !== null) {
+                const JobDetails = await db.jobDetails.update({
+                    where: {
+                        id: activeJob!.jobDetailsId
+                    },
+                    data: {
+                        possibleStartDate: new Date(possibleStartDate)
+                    }
+                });
+            }
+
+            const clearApprovedJob = await db.approvedJobs.delete({
+                where: {
+                    id: approvedJobId
+                }
+            });
+        };
+
+        revalidatePath(`/contractor/approved-jobs/list`);
+
+    } catch (error) {
+        console.error(error);
+        throw error;
     }
-    
-    await revalidatePath(`/admin/potential-jobs/details/${potentialJobId}`);
-    redirect('/admin/potential-jobs/list');
+
+    redirect('/contractor/approved-jobs/list');
 }
 
-export async function createPurchaseOrderInventoryCount(
-    data: any
-): Promise<void> {
-
+export async function dispatchJob(
+    activeJobId: number
+) {
     const user = await currentUser();
-
-    const dbUser = await db.user.findUnique({
-        where: {
-            id: user!.id
-        },
-        select: {
-            userName: true,
+    try {
+        if (!user) {
+            throw new Error('User not found');
         }
-    });
-    await db.purchaseOrderDetails.create({
-        data: {
-            purchaseOrderId: data.purchaseOrderId,
-            signedOffBy: data.signOffUser,
-            signedOffDate: new Date(),
-            mobileFactoryId: data.mobileFactoryId,
-            inventoryCreatorUserId: dbUser!.userName,
-            PurchaseOrderInventory: {
-                createMany: {
-                    data: data.items
+
+        const role: string = user!.publicMetadata.role as string;
+
+        if (role === 'cfi_super' || role === 'cfi_admin') {
+
+            const activeJob = await db.activeJobs.findUnique({
+                where: {
+                    id: activeJobId
                 }
-            }
-        }
-    });
+            });
 
-    await revalidatePath(`/active-jobs/details/${data.purchaseOrderId}`);
-    redirect('/active-jobs/list');
+            const updatedActiveJob = await db.activeJobs.update({
+                where: {
+                    id: activeJobId
+                },
+                data: {
+                    status: "Active"
+                }
+            });
+        };
+
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+
+    await revalidatePath(`/admin/pending-jobs/details/${activeJobId}`);
+    redirect('/admin/pending-jobs/list');
+}
+
+export async function startJob(jobId: number): Promise<any> {
+    const user = await currentUser();
+    try {
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        const updatedActiveJob = await db.activeJobs.update({
+            where: {
+                id: Number(jobId)
+            },
+            data: {
+                startedAt: new Date(),
+                status: "Started"
+            }
+        });
+
+        return updatedActiveJob;
+
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+
+    await revalidatePath(`/admin/active-jobs/details/${jobId}`);
+    redirect('/admin/active-jobs/list');
+}
+
+export async function completeJob(jobId: string) {
+    const user = await currentUser();
+    try {
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        const updatedActiveJob = await db.activeJobs.update({
+            where: {
+                id: Number(jobId)
+            },
+            data: {
+                status: "Completed"
+            }
+        });
+
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+
+    await revalidatePath(`/admin/active-jobs/details/${jobId}`);
+    redirect('/admin/active-jobs/list');
 }

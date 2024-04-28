@@ -5,126 +5,145 @@ generator client {
 datasource db {
   provider = "sqlserver"
   url      = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
-// USER SETUP
 model User {
-  id                    String          @id @default(uuid())
-  email                 String          @unique
-  fullName              String?
-  userName              String          @unique
-  role                  String
-  PotentialJobsCreated  PotentialJob[]  @relation("createdBy")
-  PotentialJobsApproved purchaseOrder[] @relation("approvedBy")
-  approvedPotentialJobs purchaseOrder[] @relation("approvedTo")
+  id                   String          @id @default(uuid())
+  email                String          @unique
+  fullName             String?
+  userName             String          @unique
+  role                 String
+  status               String          @default("Active")
+  contractor           Contractor[]
+  potentialJobsCreated PotentialJobs[] @relation("createdBy")
+  dubmittedJobs        SubmittedJobs[] @relation("submittedBy")
+  ApprovedJobs         ApprovedJobs[]    @relation("approvedBy")
+  AssignedJobs         ActiveJobs[]    @relation("assignedTo")
 }
 
-// END USER SETUP
-
-// POTENTIAL JOB SETUP
-model PotentialJob {
-  createdAt        DateTime            @default(now())
-  updatedAt        DateTime            @updatedAt
-  id               Int                 @id @default(autoincrement())
-  createdBy        User                @relation("createdBy", fields: [createdById], references: [id])
-  createdById      String
-  status           String              @default("Pending")
-  approvedAt       DateTime?
-  vaultNumber      String
-  owner            String
-  city             String
-  state            String
-  vaultWidth       Decimal             @db.Decimal(10, 2)
-  vaultHeight      Decimal             @db.Decimal(10, 2)
-  vaultLength      Decimal             @db.Decimal(10, 2)
-  vaultWidthUnit   String
-  vaultHeightUnit  String
-  vaultLengthUnit  String
-  wallSqFt         Decimal             @db.Decimal(10, 2)
-  ceilingSqFt      Decimal             @db.Decimal(10, 2)
-  totalSqFt        Decimal             @db.Decimal(10, 2)
-  files            PotentialJobFiles[]
-  purchaseOrder    purchaseOrder[]
+model Contractor {
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  id           Int      @id @default(autoincrement())
+  contractorId String   @default(uuid())
+  userId       String
+  User         User     @relation(fields: [userId], references: [id])
 }
 
-model PotentialJobFiles {
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  id             Int          @id @default(autoincrement())
+model JobDetails {
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  id                Int             @id @default(autoincrement())
+  vaultNumber       String
+  owner             String
+  city              String
+  state             String
+  vaultWidthFt      Decimal         @db.Decimal(10, 2)
+  vaultHeightFt     Decimal         @db.Decimal(10, 2)
+  vaultLengthFt     Decimal         @db.Decimal(10, 2)
+  vaultWidthIn      Decimal         @db.Decimal(10, 2)
+  vaultHeightIn     Decimal         @db.Decimal(10, 2)
+  vaultLengthIn     Decimal         @db.Decimal(10, 2)
+  wallSqFt          Decimal         @db.Decimal(10, 2)
+  ceilingSqFt       Decimal         @db.Decimal(10, 2)
+  totalSqFt         Decimal         @db.Decimal(10, 2)
+  possibleStartDate DateTime        @default(now())
+  activeJobs    ActiveJobs[]
+  potentialJobs PotentialJobs[]
+  submittedJobs SubmittedJobs[]
+  approvedJobs  ApprovedJobs[]
+}
+
+model JobAdditionalFiles {
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  id             Int           @id @default(autoincrement())
   PotentialJobId Int
-  PotentialJob   PotentialJob @relation(fields: [PotentialJobId], references: [id])
   fileName       String
   filetype       String
   fileExt        String
-  file           Bytes        @db.VarBinary(max)
+  file           Bytes
+  PotentialJob   PotentialJobs @relation(fields: [PotentialJobId], references: [id])
 }
 
-// END POTENTIAL JOB SETUP
-
-// PURCHASE ORDER SETUP
-model purchaseOrder {
-  createdAt               DateTime      @default(now())
-  updatedAt               DateTime      @updatedAt
-  id                      Int           @id @default(autoincrement())
-  status                  String
-  approvedTo              User          @relation("approvedTo", fields: [approvedToId], references: [id], onUpdate: NoAction)
-  approvedBy              User          @relation("approvedBy", fields: [approvedByName], references: [userName], onUpdate: NoAction)
-  approvedToId            String
-  approvedByName          String
-  potentialJobId          Int
-  potentialJob            PotentialJob  @relation(fields: [potentialJobId], references: [id], onUpdate: NoAction)
-  assignedMobileFactory   MobileFactory @relation(fields: [assignedMobileFactoryId], references: [id])
-  assignedMobileFactoryId Int
-  wallSqFt                Decimal       @db.Decimal(10, 2)
-  ceilingSqFt             Decimal       @db.Decimal(10, 2)
-  totalSqFt               Decimal       @db.Decimal(10, 2)
-  price                   Decimal       @db.Decimal(10, 2)
-  purchaseOrderDetails    PurchaseOrderDetails?
+model PotentialJobs {
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  id           Int                  @id @default(autoincrement())
+  createdById  String
+  contractorId String
+  jobDetailsId Int
+  files        JobAdditionalFiles[]
+  createdBy    User                 @relation("createdBy", fields: [createdById], references: [id])
+  jobDetails   JobDetails           @relation(fields: [jobDetailsId], references: [id])
 }
 
-model PurchaseOrderDetails {
-  createdAt                        DateTime      @default(now())
-  updatedAt                        DateTime      @updatedAt
-  id                               Int           @id @default(autoincrement())
-  purchaseOrder                    purchaseOrder @relation(fields: [purchaseOrderId], references: [id], onUpdate: NoAction)
-  purchaseOrderId                  Int @unique
-  mobileFactory                    MobileFactory         @relation(fields: [mobileFactoryId], references: [id])
-  mobileFactoryId                  Int
-  signedOffBy                      String
-  signedOffDate                    DateTime
-  inventoryCreatorUserId           String
-  PurchaseOrderInventory           PurchaseOrderInventory[]
+model SubmittedJobs {
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  id            Int        @id @default(autoincrement())
+  submittedById String
+  contractorId  String
+  status        String     @default("Pending")
+  jobDetailsId  Int
+  jobDetails    JobDetails @relation(fields: [jobDetailsId], references: [id])
+  submittedBy   User       @relation("submittedBy", fields: [submittedById], references: [id])
 }
 
-model PurchaseOrderInventory {
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  id                   Int                   @id @default(autoincrement())
-  purchaseOrderDetails PurchaseOrderDetails @relation(fields: [purchaseOrderDetailsId], references: [id])
-  purchaseOrderDetailsId Int
-  lookupInventoryItems Lookup_InventoryItems @relation(fields: [inventoryItem], references: [name])
-  inventoryItem        String
-  quantity             Int
-  notes                String?
+model ApprovedJobs {
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  id              Int           @id @default(autoincrement())
+  contractorId    String
+  jobDetailsId    Int
+  approvedBy      User          @relation("approvedBy", fields: [approvedById], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  approvedById    String
+  jobDetails      JobDetails    @relation(fields: [jobDetailsId], references: [id])
 }
-// END PURCHASE ORDER SETUP
 
-// MOBILE FACTORY SETUP
+model ActiveJobs {
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  id              Int           @id @default(autoincrement())
+  contractorId    String
+  jobDetailsId    Int
+  mobileFactory   MobileFactory @relation(fields: [mobileFactoryId], references: [tpId])
+  mobileFactoryId String
+  jobDetails      JobDetails    @relation(fields: [jobDetailsId], references: [id])
+  status          String        @default("Pending_Dispatch")
+  assignedTo      User?          @relation("assignedTo", fields: [assignedToId], references: [id])
+  assignedToId    String?
+  startedAt       DateTime?
+  completedAt     DateTime?
+}
+
 model MobileFactory {
   createdAt              DateTime                 @default(now())
   updatedAt              DateTime                 @updatedAt
   id                     Int                      @id @default(autoincrement())
+  tpId                   String                   @unique
   name                   String
   plateNumber            String
-  warehouse              Warehouse                @relation(fields: [warehouseId], references: [id])
   warehouseId            Int
-  purchaseOrder          purchaseOrder[]
-  purchaseOrderDetails   PurchaseOrderDetails[]
+  activeJobs             ActiveJobs[]
+  mixingLog              MixingLog[]
+  warehouse              Warehouse                @relation(fields: [warehouseId], references: [id])
+  mobileFactoryInventory MobileFactoryInventory[]
 }
 
-// END MOBILE FACTORY SETUP
+model MobileFactoryInventory {
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  id                   Int                   @id @default(autoincrement())
+  sortIndex            Int                   @default(0)
+  mobileFactoryId      Int
+  inventoryItem        String
+  quantity             Int                   @default(0)
+  lookupInventoryItems Lookup_InventoryItems @relation(fields: [inventoryItem], references: [identifier])
+  mobileFactory        MobileFactory         @relation(fields: [mobileFactoryId], references: [id])
+}
 
-// WAREHOUSE SETUP
 model Warehouse {
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
@@ -142,25 +161,44 @@ model WarehouseInventory {
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
   id                   Int                   @id @default(autoincrement())
-  warehouse            Warehouse             @relation(fields: [warehouseId], references: [id])
   warehouseId          Int
-  lookupInventoryItems Lookup_InventoryItems @relation(fields: [inventoryItem], references: [name])
   inventoryItem        String
-  quantity             Int
+  quantity             Int                   @default(0)
+  lookupInventoryItems Lookup_InventoryItems @relation(fields: [inventoryItem], references: [identifier])
+  warehouse            Warehouse             @relation(fields: [warehouseId], references: [id])
 }
 
-// END WAREHOUSE SETUP
-
-// LOOKUP TABLES
 model Lookup_InventoryItems {
-  createdAt                        DateTime                            @default(now())
-  updatedAt                        DateTime                            @updatedAt
-  name                             String                              @unique
-  index                            Int                                 @default(autoincrement())
-  isActive                         Boolean                             @default(true)
-  order                            Int                                 @default(0)
-  warehouseinventory               WarehouseInventory[]
-  PurchaseOrderInventory           PurchaseOrderInventory[]
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+  identifier             String                   @unique
+  name                   String                   
+  index                  Int                      @default(autoincrement())
+  isActive               Boolean                  @default(true)
+  order                  Int                      @default(0)
+  primaryUnit            String
+  secondaryUnit          String?
+  mobileFactoryInventory MobileFactoryInventory[]
+  warehouseinventory     WarehouseInventory[]
 }
 
-// END LOOKUP TABLES
+model MixingLog {
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  id              Int           @id @default(autoincrement())
+  mobileFactoryId String
+  Material        String
+  PartBDose       Int
+  BWallLevel      Int
+  BCeilingLevel   Int
+  MixTime         Int
+  LotNumber       String
+  GPSLat          String
+  GPSLong         String
+  LOGTime         String
+  LOGDate         String
+  Box1Temp        Decimal
+  Box2Temp        Decimal
+  GENHours        Int
+  mobileFactory   MobileFactory @relation(fields: [mobileFactoryId], references: [tpId])
+}

@@ -1,12 +1,14 @@
 'use client';
 
 import React, { useState, ChangeEvent } from 'react';
-import { TextField, Button, Grid, MenuItem } from '@mui/material';
+import { TextField, Button, Grid, MenuItem, Divider } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { useFormState } from 'react-dom';
 import ConfirmationModal from '@/components/layout/potential-jobs/confirm-dialog';
 import { handleCalculateSqFt } from '@/utils/math';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import moment from 'moment';
 
 // Define the props that the PostForm component expects
 interface PostFormProps {
@@ -29,15 +31,16 @@ interface confirmData {
     owner: string,
     city: string,
     state: string,
-    vaultWidth: string,
-    vaultLength: string,
-    vaultHeight: string,
-    widthUnit: string,
-    lengthUnit: string,
-    heightUnit: string,
+    vaultWidthFt: string,
+    vaultLengthFt: string,
+    vaultHeightFt: string,
+    vaultWidthIn: string,
+    vaultLengthIn: string,
+    vaultHeightIn: string,
     wallSqFt: string,
     ceilingSqFt: string,
     totalSqFt: string,
+    possibleStartDate: moment.Moment | null
 }
 
 export default function PotentialJobCreateForm({ formAction }: PostFormProps) {
@@ -52,29 +55,31 @@ export default function PotentialJobCreateForm({ formAction }: PostFormProps) {
     const [vaultNumber, setVaultNumber] = useState<string>('');
     const [city, setCity] = useState<string>('');
     const [state, setState] = useState<string>('');
-    const [vaultWidth, setWidth] = useState<string>('');
-    const [vaultLength, setLength] = useState<string>('');
-    const [vaultHeight, setHeight] = useState<string>('');
+    const [vaultWidthFt, setWidthFt] = useState<string>('');
+    const [vaultLengthFt, setLengthFt] = useState<string>('');
+    const [vaultHeightFt, setHeightFt] = useState<string>('');
+    const [vaultWidthIn, setWidthIn] = useState<string>('');
+    const [vaultLengthIn, setLengthIn] = useState<string>('');
+    const [vaultHeightIn, setHeightIn] = useState<string>('');
+    const [possibleStartDate , setPossibleStartDate] = useState<moment.Moment | null>(null);
     const [owner, setOwner] = useState<string>('');
     const [files, setFiles] = useState<File[]>([]);
-    const [widthUnit, setWidthUnit] = useState<string>('ft');
-    const [lengthUnit, setLengthUnit] = useState<string>('ft');
-    const [heightUnit, setHeightUnit] = useState<string>('ft');
 
     const [confirmData, setConfirmData] = useState<confirmData>({
         vaultNumber: '',
         owner: '',
         city: '',
         state: '',
-        vaultWidth: '',
-        vaultLength: '',
-        vaultHeight: '',
-        widthUnit: '',
-        lengthUnit: '',
-        heightUnit: '',
+        vaultWidthFt: '',
+        vaultLengthFt: '',
+        vaultHeightFt: '',
+        vaultWidthIn: '',
+        vaultLengthIn: '',
+        vaultHeightIn: '',
         wallSqFt: '',
         ceilingSqFt: '',
         totalSqFt: '',
+        possibleStartDate: null,
     });
 
     const [PotentialJobFormData, setPotentialJobFormData] = useState<FormData>(new FormData());
@@ -87,21 +92,29 @@ export default function PotentialJobCreateForm({ formAction }: PostFormProps) {
     const handleSubmit = (e: any) => {
         e.preventDefault();
         const formData = new FormData();
+
+        const vwFt = vaultWidthFt ? vaultWidthFt : '0';
+        const vlFt = vaultLengthFt ? vaultLengthFt : '0';
+        const vhFt = vaultHeightFt ? vaultHeightFt : '0';
+        const vwIn = vaultWidthIn ? vaultWidthIn : '0';
+        const vlIn = vaultLengthIn ? vaultLengthIn : '0';
+        const vhIn = vaultHeightIn ? vaultHeightIn : '0';
         formData.append('vaultNumber', vaultNumber);
         formData.append('owner', owner);
         formData.append('city', city);
         formData.append('state', state);
-        formData.append('vaultWidth', vaultWidth);
-        formData.append('vaultLength', vaultLength);
-        formData.append('vaultHeight', vaultHeight);
-        formData.append('widthUnit', widthUnit);
-        formData.append('lengthUnit', lengthUnit);
-        formData.append('heightUnit', heightUnit);
+        formData.append('vaultWidthFt', vwFt);
+        formData.append('vaultLengthFt', vlFt);
+        formData.append('vaultHeightFt', vhFt);
+        formData.append('vaultWidthIn', vwIn);
+        formData.append('vaultLengthIn', vlIn);
+        formData.append('vaultHeightIn', vhIn);
+        formData.append('possibleStartDate', moment(possibleStartDate).format('YYYY-MM-DD HH:mm:ss.SSSSSSS'));
         files.forEach(file => {
             formData.append('files', file);
         });
 
-        const [wallArea, ceilingArea, totalArea] = handleCalculateSqFt(vaultWidth, widthUnit, vaultLength, lengthUnit, vaultHeight, heightUnit);
+        const [wallArea, ceilingArea, totalArea] = handleCalculateSqFt(vwFt, vlFt, vhFt, vwIn, vlIn, vhIn);
 
         formData.append('wallSqFt', wallArea.toFixed(2));
         formData.append('ceilingSqFt', ceilingArea.toFixed(2));
@@ -114,15 +127,16 @@ export default function PotentialJobCreateForm({ formAction }: PostFormProps) {
             owner: owner,
             city: city,
             state: state,
-            vaultWidth: vaultWidth,
-            vaultLength: vaultLength,
-            vaultHeight: vaultHeight,
-            widthUnit: widthUnit,
-            lengthUnit: lengthUnit,
-            heightUnit: heightUnit,
+            vaultWidthFt: vwFt,
+            vaultLengthFt: vlFt,
+            vaultHeightFt: vhFt,
+            vaultWidthIn: vwIn,
+            vaultLengthIn: vlIn,
+            vaultHeightIn: vhIn,
             wallSqFt: wallArea.toFixed(2),
             ceilingSqFt: ceilingArea.toFixed(2),
             totalSqFt: totalArea.toFixed(2),
+            possibleStartDate: possibleStartDate,
         });
 
         setOpenModal(true);
@@ -144,7 +158,7 @@ export default function PotentialJobCreateForm({ formAction }: PostFormProps) {
     return (
         <>
             <form action={action} onSubmit={handleSubmit}>
-                <Box sx={{ height: '530px', overflow: 'hidden', overflowY: 'scroll' }}>
+                <Box sx={{ height: '530px', overflow: 'hidden', overflowY: 'scroll', px: 1 }}>
                     <Grid container spacing={2} columnSpacing={1}>
                         <Grid item xs={12} sm={12}>
                             <Typography component="h4" variant="h6" align="left">
@@ -193,120 +207,97 @@ export default function PotentialJobCreateForm({ formAction }: PostFormProps) {
                             </Typography>
                         </Grid>
                         <Grid item xs={12} sm={4}>
-                            <Grid container columnSpacing={0} spacing={0}>
-                                <Grid item xs={7}>
+                            <Typography component="label" variant="body1" align="left">
+                                Width
+                            </Typography>
+                            <Grid container columnSpacing={0} spacing={1}>
+                                <Grid item xs={6}>
                                     <TextField
                                         fullWidth
-                                        label="Width"
-                                        name="vaultWidth"
-                                        value={vaultWidth}
-                                        onChange={(e) => setWidth(e.target.value)}
-                                        InputProps={{
-                                            sx: {
-                                                borderTopRightRadius: '0px',
-                                                borderBottomRightRadius: '0px',
-                                            },
-                                        }}
+                                        label="Ft"
+                                        name="vaultWidthFt"
+                                        value={vaultWidthFt}
+                                        onChange={(e) => setWidthFt(e.target.value)}
                                     />
                                 </Grid>
-                                <Grid item xs={5}>
+                                <Grid item xs={6}>
                                     <TextField
-                                        select
                                         fullWidth
-                                        name="widthUnit"
-                                        value={widthUnit}
-                                        onChange={(e) => setWidthUnit(e.target.value)}
-                                        InputProps={{
-                                            sx: {
-                                                borderTopLeftRadius: '0px',
-                                                borderBottomLeftRadius: '0px',
-                                            },
-                                        }}
-                                    >
-                                        <MenuItem value="ft">ft</MenuItem>
-                                        <MenuItem value="in">in</MenuItem>
-                                    </TextField>
+                                        label="In"
+                                        name="vaultWidthIn"
+                                        value={vaultWidthIn}
+                                        onChange={(e) => setWidthIn(e.target.value)}
+                                    />
                                 </Grid>
                             </Grid>
                         </Grid>
                         <Grid item xs={12} sm={4}>
-                            <Grid container columnSpacing={0} spacing={0}>
-                                <Grid item xs={7}>
+                            <Typography component="label" variant="body1" align="left">
+                                Length
+                            </Typography>
+                            <Grid container columnSpacing={0} spacing={1}>
+                                <Grid item xs={6}>
                                     <TextField
                                         fullWidth
-                                        label="Length"
-                                        name='vaultLength'
-                                        value={vaultLength}
-                                        onChange={(e) => setLength(e.target.value)}
-                                        InputProps={{
-                                            sx: {
-                                                borderTopRightRadius: '0px',
-                                                borderBottomRightRadius: '0px',
-                                            },
-                                        }}
+                                        label="Ft"
+                                        name='vaultLengthFt'
+                                        value={vaultLengthFt}
+                                        onChange={(e) => setLengthFt(e.target.value)}
                                     />
                                 </Grid>
-                                <Grid item xs={5}>
+                                <Grid item xs={6}>
                                     <TextField
-                                        select
                                         fullWidth
-                                        name="lenghtUnit"
-                                        value={lengthUnit}
-                                        onChange={(e) => setLengthUnit(e.target.value)}
-                                        InputProps={{
-                                            sx: {
-                                                borderTopLeftRadius: '0px',
-                                                borderBottomLeftRadius: '0px',
-                                            },
-                                        }}
-                                    >
-                                        <MenuItem value="ft">ft</MenuItem>
-                                        <MenuItem value="in">in</MenuItem>
-                                    </TextField>
+                                        label="In"
+                                        name='vaultLengthIn'
+                                        value={vaultLengthIn}
+                                        onChange={(e) => setLengthIn(e.target.value)}
+                                    />
                                 </Grid>
                             </Grid>
                         </Grid>
                         <Grid item xs={12} sm={4}>
-                            <Grid container columnSpacing={0} spacing={0}>
-                                <Grid item xs={7}>
+                            <Typography component="label" variant="body1" align="left">
+                                Height
+                            </Typography>
+                            <Grid container columnSpacing={0} spacing={1}>
+                                <Grid item xs={6}>
                                     <TextField
                                         fullWidth
-                                        label="Height"
-                                        name='vaultHeight'
-                                        value={vaultHeight}
-                                        onChange={(e) => setHeight(e.target.value)}
-                                        InputProps={{
-                                            sx: {
-                                                borderTopRightRadius: '0px',
-                                                borderBottomRightRadius: '0px',
-                                            },
-                                        }}
+                                        label="Ft"
+                                        name='vaultHeightFt'
+                                        value={vaultHeightFt}
+                                        onChange={(e) => setHeightFt(e.target.value)}
                                     />
                                 </Grid>
-                                <Grid item xs={5}>
+                                <Grid item xs={6}>
                                     <TextField
-                                        select
                                         fullWidth
-                                        name="heightUnit"
-                                        value={heightUnit}
-                                        onChange={(e) => setHeightUnit(e.target.value)}
-                                        InputProps={{
-                                            sx: {
-                                                borderTopLeftRadius: '0px',
-                                                borderBottomLeftRadius: '0px',
-                                            },
-                                        }}
-                                    >
-                                        <MenuItem value="ft">ft</MenuItem>
-                                        <MenuItem value="in">in</MenuItem>
-                                    </TextField>
+                                        label="In"
+                                        name='vaultHeightIn'
+                                        value={vaultHeightIn}
+                                        onChange={(e) => setHeightIn(e.target.value)}
+                                    />
                                 </Grid>
                             </Grid>
 
                         </Grid>
                         <Grid item xs={12} sm={12}>
                             <Typography component="h4" variant="h6" align="left">
-                                Documentation:
+                                Possible Start Date
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={12}>
+                            <DatePicker 
+                                sx={{ width: '100%' }}
+                                value={possibleStartDate}
+                                onChange={(newValue) => setPossibleStartDate(newValue)}
+                                disablePast={true}
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={12}>
+                            <Typography component="h4" variant="h6" align="left">
+                                Information/Reports/Notes:
                             </Typography>
                         </Grid>
                         <Grid item xs={12}>

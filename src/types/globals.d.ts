@@ -14,15 +14,18 @@ declare global {
     owner: string;
     city: string;
     state: string;
-    vaultWidth: number;
-    vaultLength: number;
-    vaultHeight: number;
-    status: string;
-    approvedAt: string | null;
+     vaultWidthFt: number;
+    vaultLengthFt: number;
+    vaultHeightFt: number;
+     vaultWidthIn: number;
+    vaultLengthIn: number;
+    vaultHeightIn: number;
     createdAt: Date;
     updatedAt: Date;
-    createdBy: any
-    createdById: string;
+    createdBy: any;
+    wallSqFt: number;
+    ceilingSqFt: number;
+    totalSqFt: number;
   }
 
   interface IMobileFactory {
@@ -38,9 +41,12 @@ declare global {
       owner: string;
       city: string;
       state: string;
-      vaultWidth: Decimal;
-      vaultLength: Decimal;
-      vaultHeight: Decimal;
+       vaultWidthFt: Decimal;
+      vaultLengthFt: Decimal;
+      vaultHeightFt: Decimal;
+       vaultWidthIn: Decimal;
+      vaultLengthIn: Decimal;
+      vaultHeightIn: Decimal;
       wallSqFt: Decimal;
       ceilingSqFt: Decimal;
       totalSqFt: Decimal;

@@ -1,141 +1,205 @@
 'use server';
-import type { PotentialJob } from "@prisma/client";
+
 import { db } from "@/db";
-import { notFound } from 'next/navigation';
+import type { PotentialJobs, JobDetails } from "@prisma/client";
 import { currentUser } from '@clerk/nextjs';
 
-export async function getPotentialJobs(): Promise<PotentialJob[]> {
-    return db.potentialJob.findMany({
-        orderBy: {
-            updatedAt: 'desc'
+export async function getPotentialJobs(): Promise<PotentialJobs[]> {
+
+    const user = await currentUser();
+    try {
+        if (!user) {
+            throw new Error('User not found');
         }
-    });
+
+        const role: string = user!.publicMetadata.role as string;
+        const contractorId: string = user!.privateMetadata.contractorId as string;
+
+        if (contractorId && role === 'contractor_administrator' || role === 'contractor_office') {
+            const result = await db.potentialJobs.findMany({
+                where: {
+                    contractorId: contractorId
+                },
+                orderBy: {
+                    updatedAt: 'desc',
+                },
+                include: {
+                    jobDetails: {
+                        select: {
+                            vaultNumber: true,
+                            owner: true,
+                            city: true,
+                            state: true,
+                        }
+                    },
+                }
+            });
+
+            return result;
+
+        // should only be available to admin    
+        } else if (role === 'cfi_super' || role === 'cfi_admin') {
+            return await db.potentialJobs.findMany({
+                orderBy: {
+                    updatedAt: 'desc',
+                },
+                include: {
+                    jobDetails: true,
+                }
+            });
+        } else {
+            throw new Error('Unauthorized');
+        }
+
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+
 }
 
 export async function getPotentialJob(id: number): Promise<IPotentialJob | null> {
 
-    const PotentialJob = await db.potentialJob.findUnique({
-        where: {
-            id
-        },
-        include: {
-            createdBy: {
-                select: {
-                    id: true,
-                    fullName: true,
-                    userName: true
-                }
-            }
-        }
-    });
-
-    if (!PotentialJob) {
-        throw notFound();
-    }
-
-    const formattedJobs: IPotentialJob = {
-        ...PotentialJob,
-        createdAt: new Date(PotentialJob.createdAt),
-        updatedAt: new Date(PotentialJob.updatedAt),
-        vaultWidth: Number(PotentialJob.vaultWidth),
-        vaultLength: Number(PotentialJob.vaultLength),
-        vaultHeight: Number(PotentialJob.vaultHeight),
-        approvedAt: PotentialJob.approvedAt ? new Date(PotentialJob.approvedAt).toString() : null,
-    };
-
-    return formattedJobs;
-}
-
-
-export async function getPendingPotentialJobs(): Promise<IPotentialJob[] | null> {
-    const PotentialJobs = await db.potentialJob.findMany({
-        where: {
-            status: 'Pending'
-        },
-        include: {
-            createdBy: {
-                select: {
-                    fullName: true,
-                    userName: true
-                }
-            }
-        }
-    });
-
-    if (!PotentialJobs) {
-        throw notFound();
-    }
-
-    const formattedJobs: IPotentialJob[] = PotentialJobs.map((job) => {
-        return {
-            ...job,
-            createdAt: new Date(job.createdAt), // Convert createdAt to Date type
-            updatedAt: new Date(job.updatedAt), // Convert updatedAt to Date type
-            vaultWidth: Number(job.vaultWidth),
-            vaultLength: Number(job.vaultLength),
-            vaultHeight: Number(job.vaultHeight),
-            approvedAt: job.approvedAt ? new Date(job.approvedAt).toString() : null, // Convert approvedAt to string type
-        };
-    });
-    return formattedJobs;
-}
-
-export async function getPotentialJobsByUser(): Promise<IPotentialJob[]> {
     const user = await currentUser();
-
-    if (!user) {
-        throw new Error('User not found');
-    }
-
-    const jobs = await db.potentialJob.findMany({
-        where: {
-            createdById: user.id
-        },
-        include: {
-            createdBy: true
+    try {
+        if (!user) {
+            throw new Error('User not found');
         }
-    });
 
-    const formattedJobs: IPotentialJob[] = jobs.map((job) => {
-        return {
-            ...job,
-            createdAt: new Date(job.createdAt), // Convert createdAt to Date type
-            updatedAt: new Date(job.updatedAt), // Convert updatedAt to Date type
-            vaultWidth: Number(job.vaultWidth),
-            vaultLength: Number(job.vaultLength),
-            vaultHeight: Number(job.vaultHeight),
-            approvedAt: job.approvedAt ? new Date(job.approvedAt).toString() : null, // Convert approvedAt to string type
+        const PotentialJob = await db.potentialJobs.findUnique({
+            where: {
+                id
+            },
+            include: {
+                createdBy: {
+                    select: {
+                        id: true,
+                        fullName: true,
+                        userName: true
+                    }
+                },
+                jobDetails: true
+            }
+        });
+
+        if (PotentialJob?.createdById !== user.id) {
+            throw new Error('Unauthorized');
+        }
+
+        if (!PotentialJob) {
+            throw new Error('Potential Job not found');
+        }
+
+        const formattedJobs: IPotentialJob = {
+            ...PotentialJob.jobDetails,
+            createdBy: PotentialJob.createdBy,
+            createdAt: new Date(PotentialJob.createdAt),
+            updatedAt: new Date(PotentialJob.updatedAt),
+            vaultWidthFt:  Number(PotentialJob.jobDetails.vaultWidthFt),
+            vaultLengthFt: Number(PotentialJob.jobDetails.vaultLengthFt),
+            vaultHeightFt: Number(PotentialJob.jobDetails.vaultHeightFt),
+            vaultWidthIn:  Number(PotentialJob.jobDetails.vaultWidthIn),
+            vaultLengthIn: Number(PotentialJob.jobDetails.vaultLengthIn),
+            vaultHeightIn: Number(PotentialJob.jobDetails.vaultHeightIn),
+            wallSqFt: Number(PotentialJob.jobDetails.wallSqFt),
+            ceilingSqFt: Number(PotentialJob.jobDetails.ceilingSqFt),
+            totalSqFt: Number(PotentialJob.jobDetails.totalSqFt),
+            
         };
-    });
-    return formattedJobs;
-}
 
-export async function getPotentialJobsCountByUser(): Promise<number> {
-    const user = await currentUser();
+        return formattedJobs;
 
-    if (!user) {
-        throw new Error('User not found');
+    } catch (error) {
+        console.error(error);
+        throw error;
     }
-
-    const jobsCount = await db.potentialJob.count({
-        where: {
-            createdById: user.id,
-            status: 'Pending'
-        },
-    });
-    return jobsCount;
-
 }
 
-export async function getMobileFactories(): Promise<IMobileFactory[]> {
-    const mobileFactories = await db.mobileFactory.findMany({
-        select: {
-            id: true,
-            name: true,
-            plateNumber: true,
-            warehouseId: true
-        }
-    });
 
-    return mobileFactories;
-}
+// export async function getPendingPotentialJobs(): Promise<IPotentialJob[] | null> {
+//     const PotentialJobs = await db.potentialJobs.findMany({
+//         where: {
+//             status: 'Pending'
+//         },
+//         include: {
+//             createdBy: {
+//                 select: {
+//                     fullName: true,
+//                     userName: true
+//                 }
+//             }
+//         }
+//     });
+
+//     if (!PotentialJobs) {
+//         throw notFound();
+//     }
+
+//     const formattedJobs: IPotentialJob[] = PotentialJobs.map((job) => {
+//         return {
+//             ...job,
+//             createdAt: new Date(job.createdAt), // Convert createdAt to Date type
+//             updatedAt: new Date(job.updatedAt), // Convert updatedAt to Date type
+//             vaultWidthFt:  Number(job.vaultWidthFt),
+//             vaultLengthFt: Number(job.vaultLengthFt),
+//             vaultHeightFt: Number(job.vaultHeightFt),
+//             vaultWidthIn:  Number(job.vaultWidthIn),
+//             vaultLengthIn: Number(job.vaultLengthIn),
+//             vaultHeightIn: Number(job.vaultHeightIn),
+//             approvedAt: job.approvedAt ? new Date(job.approvedAt).toString() : null, // Convert approvedAt to string type
+//         };
+//     });
+//     return formattedJobs;
+// }
+
+// export async function getPotentialJobsByUser(): Promise<IPotentialJob[]> {
+//     const user = await currentUser();
+
+//     if (!user) {
+//         throw new Error('User not found');
+//     }
+
+//     const jobs = await db.potentialJob.findMany({
+//         where: {
+//             createdById: user.id
+//         },
+//         include: {
+//             createdBy: true
+//         }
+//     });
+
+//     const formattedJobs: IPotentialJob[] = jobs.map((job) => {
+//         return {
+//             ...job,
+//             createdAt: new Date(job.createdAt), // Convert createdAt to Date type
+//             updatedAt: new Date(job.updatedAt), // Convert updatedAt to Date type
+//             vaultWidthFt: Number(job.vaultWidthFt),
+//             vaultLengthFt: Number(job.vaultLengthFt),
+//             vaultHeightFt: Number(job.vaultHeightFt),
+//             vaultWidthIn: Number(job.vaultWidthIn),
+//             vaultLengthIn: Number(job.vaultLengthIn),
+//             vaultHeightIn: Number(job.vaultHeightIn),
+//             approvedAt: job.approvedAt ? new Date(job.approvedAt).toString() : null, // Convert approvedAt to string type
+//         };
+//     });
+//     return formattedJobs;
+// }
+
+// export async function getPotentialJobsCountByUser(): Promise<number> {
+//     const user = await currentUser();
+
+//     if (!user) {
+//         throw new Error('User not found');
+//     }
+
+//     const jobsCount = await db.potentialJob.count({
+//         where: {
+//             createdById: user.id,
+//             status: 'Pending'
+//         },
+//     });
+//     return jobsCount;
+
+// }
+
+

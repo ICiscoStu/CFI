@@ -7,11 +7,11 @@ import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 
 import IconClipboard from '@/components/icon/icon-clipboard';
-import IconSearch from '@/components/icon/icon-search';
-import IconTraining from '@/components/icon/icon-training';
-
+import IconUsers from '@/components/icon/icon-users';
+import IconMobileFactory from '@/components/icon/icon-mobile-factory';
+import IconWarehouse from '@/components/icon/icon-warehouse';
+import IconReports from '@/components/icon/icon-reports';
 import { useUser } from '@clerk/nextjs';
-import IconSettings from '@/components/icon/icon-settings';
 
 const Item = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : 'white',
@@ -28,17 +28,61 @@ const Settings = () => {
 
   return (
     <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 1, md: 3 }}>
-      {role && role === 'administrator' && (
+      {role && (role === 'administrator' || role === 'superadmin') && (
         <>
           <Grid xs={12}>
+            {role === 'superadmin' && (
+              <Item>
+                <Button variant="contained" color="primary" href="/admin/settings/users/list" fullWidth>
+                  <Grid container direction="column" alignItems="center" spacing={1}>
+                    <Grid>
+                      <IconUsers className="h-20 w-20 py-2" />
+                    </Grid>
+                    <Grid>
+                      <Typography variant="button">Users</Typography>
+                    </Grid>
+                  </Grid>
+                </Button>
+              </Item>
+            )}
+          </Grid>
+          <Grid xs={12}>
             <Item>
-              <Button variant="contained" color="primary" href="/admin/settings/users/list" fullWidth>
+              <Button variant="contained" color="primary" href="/admin/settings/mobile-factories/list" fullWidth>
                 <Grid container direction="column" alignItems="center" spacing={1}>
                   <Grid>
-                    <IconClipboard className="h-28 w-28 py-2" />
+                    <IconMobileFactory className="h-20 w-20 py-2" />
                   </Grid>
                   <Grid>
-                    <Typography variant="button">Users</Typography>
+                    <Typography variant="button">Mobile Factories</Typography>
+                  </Grid>
+                </Grid>
+              </Button>
+            </Item>
+          </Grid>
+          <Grid xs={12}>
+            <Item>
+              <Button variant="contained" color="primary" href="/admin/settings/warehouses/list" fullWidth>
+                <Grid container direction="column" alignItems="center" spacing={1}>
+                  <Grid>
+                    <IconWarehouse className="h-20 w-20s py-2" />
+                  </Grid>
+                  <Grid>
+                    <Typography variant="button">Warehouses</Typography>
+                  </Grid>
+                </Grid>
+              </Button>
+            </Item>
+          </Grid>
+          <Grid xs={12}>
+            <Item>
+              <Button variant="contained" color="primary" href="/admin/settings/reports/list" fullWidth>
+                <Grid container direction="column" alignItems="center" spacing={1}>
+                  <Grid>
+                    <IconReports className="h-20 w-20 py-2" />
+                  </Grid>
+                  <Grid>
+                    <Typography variant="button">Reports</Typography>
                   </Grid>
                 </Grid>
               </Button>

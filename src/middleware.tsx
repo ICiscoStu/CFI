@@ -13,7 +13,7 @@ export default authMiddleware({
 
     const adminRoutes = "/admin/*";
     const role = auth.user?.publicMetadata.role;
-    if(auth.userId && ( role != "administrator" && req.url.startsWith(adminRoutes))) {
+    if(auth.userId && ( (role != "administrator" || role != "superadmin" ) && req.url.startsWith(adminRoutes))) {
       return NextResponse.redirect("/");
     }
   }

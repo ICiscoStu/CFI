@@ -4,7 +4,7 @@ import { List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, Chip
 import ContentPasteGoIcon from '@mui/icons-material/ContentPasteGo';
 
 import { getPotentialJobsCountByUser } from '@/db/queries/potential-jobs';
-import { getActiveJobsByUser } from '@/db/queries/active-jobs';
+import { getActiveJobsByUser } from '@/db/queries/active-jobs-old';
 
 interface Item {
     createdAt: Date;

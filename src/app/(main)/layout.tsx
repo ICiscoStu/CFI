@@ -1,4 +1,4 @@
-
+"use client";
 import Grid from "@mui/material/Grid";
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
@@ -7,6 +7,10 @@ import { UserButton } from "@clerk/nextjs";
 
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
+
+
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment'
 
 export default function MainLayout({
     children,
@@ -42,8 +46,8 @@ export default function MainLayout({
                             showName={true}
                             afterSignOutUrl="/sign-in"
                             appearance={{
-                                elements:{
-                                    userButtonPopoverActionButton__manageAccount: "hidden",    
+                                elements: {
+                                    userButtonPopoverActionButton__manageAccount: "hidden",
                                 }
                             }}
                         />
@@ -60,7 +64,9 @@ export default function MainLayout({
                         height: '70%'
                     }}
                 >
-                    {children}
+                    <LocalizationProvider dateAdapter={AdapterMoment}>
+                        {children}
+                    </LocalizationProvider>
                 </Box>
             </Grid>
         </Grid>

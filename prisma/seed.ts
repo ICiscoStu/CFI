@@ -5,54 +5,101 @@ const prisma = new PrismaClient()
 
 async function main() {
 
-    //initial user creation in db
-    const admin = await prisma.user.upsert({
+    const superadmin = await prisma.user.upsert({
         where: { email: 'developer@alamobrass.com' },
         update: {},
         create: {
             id: "user_2clz7rFrMqeDgF0kFfzSmIWrfiZ",
             email: 'developer@alamobrass.com',
-            fullName: 'Alamo Brass Admin',
-            userName: 'abrassa',
-            role: 'administrator'
+            fullName: 'CFI Super Administrator',
+            userName: 'cfisuper',
+            role: 'cfi_super'
         },
     });
 
-    const contractor_admin = await prisma.user.upsert({
+    const grunt = await prisma.user.upsert({
+        where: { email: 'themrcisco@gmail.com' },
+        update: {},
+        create: {
+            id: "user_2dxdPrb7kQe6EAtT1mK5y0puuDh",
+            email: 'themrcisco@gmail.com',
+            fullName: 'CFI Grunt',
+            userName: 'cfigrunt',
+            role: 'cfi_grunt'
+        },
+    });
+
+    const admin = await prisma.user.upsert({
         where: { email: 'developer@alamobrasstechnologies.com' },
         update: {},
         create: {
             id: "user_2cSJNbmFOl1KPAKa6T5WbBTRkcX",
             email: 'developer@alamobrasstechnologies.com',
-            fullName: 'Alamo Brass Technologies Admin',
-            userName: 'abtadmin',
+            fullName: 'CFI Administrator',
+            userName: 'cfiadmin',
+            role: 'cfi_admin'
+        },
+    });
+    
+    const contractor_admin = await prisma.user.upsert({
+        where: { email: 'contractor_admin@contractor.com' },
+        update: {},
+        create: {
+            id: "user_2dyMTvzOf1vJbWvg7E4uSc3Hx8k",
+            email: 'contractor_admin@contractor.com',
+            fullName: 'Alamo Brass Contractor Admin',
+            userName: 'abadmin',
             role: 'contractor_administrator'
         },
     });
 
-    console.log({ admin, contractor_admin });
+    const contractor_office = await prisma.user.upsert({
+        where: { email: 'office@contractor.com' },
+        update: {},
+        create: {
+            id: "user_2dyMW1Lq2ZyILUseuopwbxxOkQf",
+            email: 'office@contractor.com',
+            fullName: 'Alamo Brass Contractor Office',
+            userName: 'aboffice',
+            role: 'contractor_office'
+        },
+    });
 
-    const looup_inventoryItems = await prisma.lookup_InventoryItems.createMany({
+    const contractor_field = await prisma.user.upsert({
+        where: { email: 'field@contractor.com' },
+        update: {},
+        create: {
+            id: "user_2dyMY2WIgqbLT7tXzFQxhJGjN1M",
+            email: 'field@contractor.com',
+            fullName: 'Alamo Brass Contractor Field',
+            userName: 'abfield',
+            role: 'contractor_field'
+        },
+    });
+
+    const contractor = await prisma.contractor.createMany({
         data: [
-            { name: "Wall Base A", isActive: true, order: 0},
-            { name: "Ceiling Base A", isActive: true, order: 0},
-            { name: "Top Coat", isActive: true, order: 0 },
-            { name: "Wall Base B", isActive: true, order: 0 },
-            { name: "Ceiling Base B", isActive: true, order: 0 },
-            { name: "Crack Fill", isActive: true, order: 0 },
-            { name: "Packs of Glass", isActive: true, order: 0 },
-            { name: "Green tips", isActive: true, order: 1 },
-            { name: "Boxes of Gloves S", isActive: true, order: 1 },
-            { name: "Boxes of Gloves M", isActive: true, order: 1 },
-            { name: "Boxes of Gloves L", isActive: true, order: 1},
-            { name: "Tyvek Suit S", isActive: true, order: 1 },
-            { name: "Tyvek Suit M", isActive: true, order: 1 },
-            { name: "Tyvek Suit L", isActive: true, order: 1 },
-            { name: "Tyvek Suit XL", isActive: true, order: 1},
-            { name: "Boxes of Plungers", isActive: true, order: 1}
+            { userId: "user_2dyMTvzOf1vJbWvg7E4uSc3Hx8k", contractorId: '44e9cd6d-5f29-4481-a34a-78745f753457'},
+            { userId: "user_2dyMW1Lq2ZyILUseuopwbxxOkQf", contractorId: '44e9cd6d-5f29-4481-a34a-78745f753457'},
+            { userId: "user_2dyMY2WIgqbLT7tXzFQxhJGjN1M", contractorId: '44e9cd6d-5f29-4481-a34a-78745f753457'}
         ]
     });
-    console.log({ looup_inventoryItems });
+
+    console.log({ admin, contractor_admin, superadmin, contractor_field, contractor_office, grunt });
+    console.log({ contractor });
+
+    const lookup_inventoryItems = await prisma.lookup_InventoryItems.createMany({
+        data: [
+            { identifier: 'wallBase', name: "Wall Base", isActive: true, order: 0, primaryUnit: 'boxes', secondaryUnit: 'tubes' },
+            { identifier: 'ceilingBase', name: "Ceiling Base", isActive: true, order: 0, primaryUnit: 'boxes', secondaryUnit: 'tubes' },
+            { identifier: 'topCoat', name: "Top Coat", isActive: true, order: 0, primaryUnit: 'boxes', secondaryUnit: 'tubes' },
+            { identifier: 'partBWall', name: "Wall B", isActive: true, order: 0, primaryUnit: 'boxes', secondaryUnit: 'tubes' },
+            { identifier: 'partBCeiling', name: "Ceiling B", isActive: true, order: 0, primaryUnit: 'boxes', secondaryUnit: 'tubes' },
+            { identifier: 'crackFill', name: "Crack Fill", isActive: true, order: 0, primaryUnit: 'boxes', secondaryUnit: 'tubes' },
+            { identifier: 'glass', name: "Packs of Glass", isActive: true, order: 0, primaryUnit: 'boxes', secondaryUnit: 'tubes' },
+        ]
+    });
+    console.log({ lookup_inventoryItems });
 
     const warehouse = await prisma.warehouse.createMany({
         data: [
@@ -64,53 +111,56 @@ async function main() {
 
     const warehouse_inventory = await prisma.warehouseInventory.createMany({
         data: [
-            { warehouseId: 1, inventoryItem: "Wall Base A", quantity: 1000 },
-            { warehouseId: 1, inventoryItem: "Ceiling Base A", quantity: 1000 },
-            { warehouseId: 1, inventoryItem: "Top Coat", quantity: 1000 },
-            { warehouseId: 1, inventoryItem: "Wall Base B", quantity: 1000 },
-            { warehouseId: 1, inventoryItem: "Ceiling Base B", quantity: 1000 },
-            { warehouseId: 1, inventoryItem: "Crack Fill", quantity: 1000 },
-            { warehouseId: 1, inventoryItem: "Packs of Glass", quantity: 1000 },
-            { warehouseId: 1, inventoryItem: "Green tips", quantity: 1000 },
-            { warehouseId: 1, inventoryItem: "Boxes of Gloves S", quantity: 1000 },
-            { warehouseId: 1, inventoryItem: "Boxes of Gloves M", quantity: 1000 },
-            { warehouseId: 1, inventoryItem: "Boxes of Gloves L", quantity: 1000 },
-            { warehouseId: 1, inventoryItem: "Tyvek Suit S", quantity: 1000 },
-            { warehouseId: 1, inventoryItem: "Tyvek Suit M", quantity: 1000 },
-            { warehouseId: 1, inventoryItem: "Tyvek Suit L", quantity: 1000 },
-            { warehouseId: 1, inventoryItem: "Tyvek Suit XL", quantity: 1000 },
-            { warehouseId: 1, inventoryItem: "Boxes of Plungers", quantity: 1000 },
-            { warehouseId: 2, inventoryItem: "Wall Base A", quantity: 1000 },
-            { warehouseId: 2, inventoryItem: "Ceiling Base A", quantity: 1000 },
-            { warehouseId: 2, inventoryItem: "Top Coat", quantity: 1000 },
-            { warehouseId: 2, inventoryItem: "Wall Base B", quantity: 1000 },
-            { warehouseId: 2, inventoryItem: "Ceiling Base B", quantity: 1000 },
-            { warehouseId: 2, inventoryItem: "Crack Fill", quantity: 1000 },
-            { warehouseId: 2, inventoryItem: "Packs of Glass", quantity: 1000 },
-            { warehouseId: 2, inventoryItem: "Green tips", quantity: 1000 },
-            { warehouseId: 2, inventoryItem: "Boxes of Gloves S", quantity: 1000 },
-            { warehouseId: 2, inventoryItem: "Boxes of Gloves M", quantity: 1000 },
-            { warehouseId: 2, inventoryItem: "Boxes of Gloves L", quantity: 1000 },
-            { warehouseId: 2, inventoryItem: "Tyvek Suit S", quantity: 1000 },
-            { warehouseId: 2, inventoryItem: "Tyvek Suit M", quantity: 1000 },
-            { warehouseId: 2, inventoryItem: "Tyvek Suit L", quantity: 1000 },
-            { warehouseId: 2, inventoryItem: "Tyvek Suit XL", quantity: 1000 },
-            { warehouseId: 2, inventoryItem: "Boxes of Plungers", quantity: 1000 }
+            { warehouseId: 1, inventoryItem: "crackFill", quantity: 1000},
+            { warehouseId: 1, inventoryItem: "wallBase", quantity: 1000},
+            { warehouseId: 1, inventoryItem: "ceilingBase", quantity: 1000},
+            { warehouseId: 1, inventoryItem: "glass", quantity: 1000},
+            { warehouseId: 1, inventoryItem: "topCoat", quantity: 1000},
+            { warehouseId: 1, inventoryItem: "partBWall", quantity: 1000},
+            { warehouseId: 1, inventoryItem: "partBCeiling", quantity: 1000},
+            { warehouseId: 2, inventoryItem: "crackFill", quantity: 1000},
+            { warehouseId: 2, inventoryItem: "wallBase", quantity: 1000},
+            { warehouseId: 2, inventoryItem: "ceilingBase", quantity: 1000},
+            { warehouseId: 2, inventoryItem: "glass", quantity: 1000},
+            { warehouseId: 2, inventoryItem: "topCoat", quantity: 1000},
+            { warehouseId: 2, inventoryItem: "partBWall", quantity: 1000},
+            { warehouseId: 2, inventoryItem: "partBCeiling", quantity: 1000},
         ]
     });
 
     console.log({ warehouse, warehouse_inventory });
 
+
     const mobile_factory = await prisma.mobileFactory.createMany({
         data: [
-            { name: "Test Mobile Factory", plateNumber: "ABC123", warehouseId: 1 },
-            { name: "Mobile Factory II", plateNumber: "DEF456", warehouseId: 1 },
-            { name: "Alamo Brass Mobile Factory", plateNumber: "GHJ456", warehouseId: 2 },
-            { name: "Alamo Brass Mobile Factory II", plateNumber: "KLM789", warehouseId: 2 }
+            { name: "Mobile Factory Van", plateNumber: "ABC123", warehouseId: 1, tpId: "V1" },
+            { name: "Mobile Factory Trailer", plateNumber: "GHJ456", warehouseId: 2, tpId:"T1"},
+            
         ]
     });
 
     console.log({ mobile_factory });
+
+    const mobile_factory_inventory = await prisma.mobileFactoryInventory.createMany({
+        data: [
+            { sortIndex: 1, mobileFactoryId: 1, inventoryItem: "wallBase", quantity: 20},
+            { sortIndex: 2, mobileFactoryId: 1, inventoryItem: "ceilingBase", quantity: 23},
+            { sortIndex: 4, mobileFactoryId: 1, inventoryItem: "topCoat", quantity: 12},
+            { sortIndex: 5, mobileFactoryId: 1, inventoryItem: "partBWall", quantity: 45},
+            { sortIndex: 6, mobileFactoryId: 1, inventoryItem: "partBCeiling", quantity: 40},
+            { sortIndex: 0, mobileFactoryId: 1, inventoryItem: "crackFill", quantity: 100},
+            { sortIndex: 3, mobileFactoryId: 1, inventoryItem: "glass", quantity: 111},
+            { sortIndex: 1, mobileFactoryId: 2, inventoryItem: "wallBase", quantity: 32},
+            { sortIndex: 2, mobileFactoryId: 2, inventoryItem: "ceilingBase", quantity: 45},
+            { sortIndex: 4, mobileFactoryId: 2, inventoryItem: "topCoat", quantity: 23},
+            { sortIndex: 5, mobileFactoryId: 2, inventoryItem: "partBWall", quantity: 84},
+            { sortIndex: 6, mobileFactoryId: 2, inventoryItem: "partBCeiling", quantity: 39},
+            { sortIndex: 0, mobileFactoryId: 2, inventoryItem: "crackFill", quantity: 45},
+            { sortIndex: 3, mobileFactoryId: 2, inventoryItem: "glass", quantity: 75},
+        ]
+    });
+
+    console.log({ mobile_factory_inventory });
 };
 
 main()
