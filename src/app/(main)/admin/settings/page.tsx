@@ -27,26 +27,42 @@ const Settings = () => {
   const role: any = user?.publicMetadata?.role;
 
   return (
-    <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 1, md: 3 }}>
-      {role && (role === 'administrator' || role === 'superadmin') && (
+    <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 1, md: 1 }}>
+      {role && (role === 'cfi_admin' || role === 'cfi_super') && (
         <>
-          <Grid xs={12}>
-            {role === 'superadmin' && (
-              <Item>
-                <Button variant="contained" color="primary" href="/admin/settings/users/list" fullWidth>
-                  <Grid container direction="column" alignItems="center" spacing={1}>
-                    <Grid>
-                      <IconUsers className="h-20 w-20 py-2" />
+          {role === 'cfi_super' && (
+            <>
+              <Grid xs={6}>
+                <Item>
+                  <Button variant="contained" color="primary" href="/admin/settings/users/list" fullWidth>
+                    <Grid container direction="column" alignItems="center" spacing={1}>
+                      <Grid>
+                        <IconUsers className="h-20 w-20 py-2" />
+                      </Grid>
+                      <Grid>
+                        <Typography variant="button">Users</Typography>
+                      </Grid>
                     </Grid>
-                    <Grid>
-                      <Typography variant="button">Users</Typography>
+                  </Button>
+                </Item>
+              </Grid>
+              <Grid xs={6}>
+                <Item>
+                  <Button variant="contained" color="primary" href="/admin/settings/contractors/list" fullWidth>
+                    <Grid container direction="column" alignItems="center" spacing={1}>
+                      <Grid>
+                        <IconUsers className="h-20 w-20 py-2" />
+                      </Grid>
+                      <Grid>
+                        <Typography variant="button">Contractors</Typography>
+                      </Grid>
                     </Grid>
-                  </Grid>
-                </Button>
-              </Item>
-            )}
-          </Grid>
-          <Grid xs={12}>
+                  </Button>
+                </Item>
+              </Grid>
+            </>
+          )}
+          <Grid xs={6}>
             <Item>
               <Button variant="contained" color="primary" href="/admin/settings/mobile-factories/list" fullWidth>
                 <Grid container direction="column" alignItems="center" spacing={1}>
@@ -60,7 +76,7 @@ const Settings = () => {
               </Button>
             </Item>
           </Grid>
-          <Grid xs={12}>
+          <Grid xs={6}>
             <Item>
               <Button variant="contained" color="primary" href="/admin/settings/warehouses/list" fullWidth>
                 <Grid container direction="column" alignItems="center" spacing={1}>
@@ -89,8 +105,9 @@ const Settings = () => {
             </Item>
           </Grid>
         </>
-      )}
-    </Grid>
+      )
+      }
+    </Grid >
 
   );
 };

@@ -1,8 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
-
-
 async function main() {
 
     const superadmin = await prisma.user.upsert({
@@ -79,14 +77,20 @@ async function main() {
 
     const contractor = await prisma.contractor.createMany({
         data: [
-            { userId: "user_2dyMTvzOf1vJbWvg7E4uSc3Hx8k", contractorId: '44e9cd6d-5f29-4481-a34a-78745f753457'},
-            { userId: "user_2dyMW1Lq2ZyILUseuopwbxxOkQf", contractorId: '44e9cd6d-5f29-4481-a34a-78745f753457'},
-            { userId: "user_2dyMY2WIgqbLT7tXzFQxhJGjN1M", contractorId: '44e9cd6d-5f29-4481-a34a-78745f753457'}
+            { userId: "user_2dyMTvzOf1vJbWvg7E4uSc3Hx8k", contractorId: '44e9cd6d-5f29-4481-a34a-78745f753457', detailsId: 1},
+            { userId: "user_2dyMW1Lq2ZyILUseuopwbxxOkQf", contractorId: '44e9cd6d-5f29-4481-a34a-78745f753457', detailsId: 1},
+            { userId: "user_2dyMY2WIgqbLT7tXzFQxhJGjN1M", contractorId: '44e9cd6d-5f29-4481-a34a-78745f753457', detailsId: 1}
+        ]
+    });
+
+    const contractor_details = await prisma.contractorDetails.createMany({
+        data: [
+            { name: 'Alamo contractor 25' }
         ]
     });
 
     console.log({ admin, contractor_admin, superadmin, contractor_field, contractor_office, grunt });
-    console.log({ contractor });
+    console.log({ contractor, contractor_details });
 
     const lookup_inventoryItems = await prisma.lookup_InventoryItems.createMany({
         data: [

@@ -29,6 +29,16 @@ model Contractor {
   contractorId String   @default(uuid())
   userId       String
   User         User     @relation(fields: [userId], references: [id])
+  detailsId    Int
+  ContractorDetails ContractorDetails @relation(fields: [detailsId], references: [id])
+}
+
+model ContractorDetails {
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  id           Int      @id @default(autoincrement())
+  name         String
+  Contractor   Contractor[]
 }
 
 model JobDetails {
@@ -116,6 +126,17 @@ model ActiveJobs {
   assignedToId    String?
   startedAt       DateTime?
   completedAt     DateTime?
+}
+
+model JobEstimates {
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  id                   Int                   @id @default(autoincrement())
+  inventoryItem        String
+  quantity             Int
+  jobId                Int
+  Job                  ActiveJobs            @relation("job", fields: [jobId], references: [id])
+  lookupInventoryItems Lookup_InventoryItems @relation(fields: [inventoryItem], references: [identifier])
 }
 
 model MobileFactory {
