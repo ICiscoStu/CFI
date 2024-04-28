@@ -85,7 +85,7 @@ async function main() {
 
     const contractor_details = await prisma.contractorDetails.createMany({
         data: [
-            { name: 'Alamo contractor 25' }
+            { id: 1, name: 'Alamo contractor 25' }
         ]
     });
 
